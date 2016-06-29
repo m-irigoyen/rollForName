@@ -1,0 +1,14 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+
+FIND_PACKAGE( Boost 1.61 REQUIRED)
+
+SET(EXE_NAME "RollForName")
+
+PROJECT(${EXE_NAME})
+
+FILE(GLOB_RECURSE SRC_ALL
+	${CMAKE_CURRENT_SOURCE_DIR}/rollForName/*
+	)
+
+include_directories(${Boost_INCLUDE_DIRS}) 
+add_executable(${EXE_NAME} ${SRC_ALL} )

@@ -33,4 +33,10 @@ namespace rfn
 
 		return total;
 	}
+
+	struct Roll
+	{
+		unsigned int nbDices;
+		unsigned int nbFaces;
+	};
 }

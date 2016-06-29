@@ -3,6 +3,7 @@
 #include <functional>
 #include <cctype>
 #include <locale>
+#include <algorithm>
 
 #include "typedefs.h"
 

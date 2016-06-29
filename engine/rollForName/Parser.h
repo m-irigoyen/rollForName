@@ -23,9 +23,11 @@ namespace rfn
 	{
 	public:
 		//! Returns true if the line is a table name
-		static bool isTableName(ustring line, ustring& name);
+		static bool isTableName(const ustring& line, ustring& name);
 
 		//! If a table was succesfully parsed, returns true
-		static bool parseTable(std::wifstream& stream, Table& t);
+		static bool parseTable(const ustring& line, Table& t);
+
+		static bool parseRange(const ustring& line, Range& result);
 	};
 }

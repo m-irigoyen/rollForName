@@ -6,18 +6,34 @@
 namespace rfn
 {
 	typedef std::wstring ustring;
+	typedef std::string string;
 
 	struct Range
 	{
-		Range::Range() : min(0), max(0) {}
+		Range::Range(int min = 0, int max = 0) : min(min), max(max) {}
 
 		int min;
 		int max;
+
+		bool operator==(const Range& other)
+		{
+			return (min == other.min) && (max == other.max);
+		}
 
 		//! Returns true if nb is in the given range
 		bool isInRange(int nb)
 		{
 			return (nb >= min) && (nb <= max);
+		}
+
+		std::string toString()
+		{
+			return "<" + std::to_string(min) + "_" + std::to_string(max) + ">";
+		}
+
+		ustring toUstring()
+		{
+			return L"<" + std::to_wstring(min) + L"_" + std::to_wstring(max) + L">";
 		}
 	};
 

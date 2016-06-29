@@ -1,20 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
-set (BOOST_INCLUDEDIR C:/Edrevan/libs/boost_1_61_0/)
+PROJECT("rollForNameDev")
 
-#set(Boost_LIBRARY_DIR C:/Edrevan/libs/boost_1_61_0/stage/lib)
-#FIND_PACKAGE( Boost 1.61 COMPONENTS spirit )
-
-SET(EXE_NAME "RollForName")
-
-PROJECT(${EXE_NAME})
-
-FILE(GLOB_RECURSE SRC_ALL
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/src/*
-	)
-
-include_directories(${BOOST_INCLUDEDIR})
-add_executable(${EXE_NAME} ${SRC_ALL} )
-
-#TARGET_LINK_LIBRARIES( ${EXE_NAME} ${Boost_LIBRARIES} )
+add_subdirectory(engine)
+add_subdirectory(tests)
