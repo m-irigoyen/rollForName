@@ -29,5 +29,7 @@ namespace rfn
 		static bool parseTable(const ustring& line, Table& t);
 
 		static bool parseRange(const ustring& line, Range& result);
+
+		static bool parseRoll(const ustring& line, std::vector<Roll>& result);
 	};
 }

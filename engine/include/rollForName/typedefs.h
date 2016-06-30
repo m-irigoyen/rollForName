@@ -35,6 +35,14 @@ namespace rfn
 		{
 			return L"<" + std::to_wstring(min) + L"_" + std::to_wstring(max) + L">";
 		}
+
+		void makeValid()
+		{
+			if (max < min)
+			{
+				std::swap(min, max);
+			}
+		}
 	};
 
 	struct TableEntry

@@ -1,9 +1,9 @@
-#include "TableManager.h"
+#include <rollForName/TableManager.h>
 
-#include "FileUtils.h"
-#include "StringHelpers.h"
+#include <rollForName/FileUtils.h>
+#include <rollForName/StringHelpers.h>
 
-#include "Parser.h"
+#include <rollForName/Parser.h>
 
 namespace rfn
 {

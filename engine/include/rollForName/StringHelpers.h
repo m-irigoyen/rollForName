@@ -168,6 +168,11 @@ static inline ustring trimmed(T s) {
 	return s;
 }
 
+template <typename T>
+static inline void removeSpaces(T& s) {
+	s.erase(remove_if(s.begin(), s.end(), isspace), s.end());
+}
+
 //! Returns true if s contains searched
 static inline bool contains(ustring s, ustring searched)
 {
@@ -178,6 +183,8 @@ static inline bool compare(ustring s1, ustring s2)
 {
 	return s1.compare(s2) == 0;
 }
+
+
 
 //
 //// to_string

@@ -1,4 +1,4 @@
-#include "Table.h"
+#include <rollForName/Table.h>
 
 namespace rfn
 {

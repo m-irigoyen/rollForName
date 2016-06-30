@@ -1,13 +1,14 @@
 #include "Test.h"
 
-#include "Logger.h"
-#include "Random.h"
-#include "GameDictionary.h"
-#include "Parser.h"
+#include <rollForName/Logger.h>
+#include <rollForName/Random.h>
+#include <rollForName/GameDictionary.h>
+#include <rollForName/Parser.h>
 
 #include <iostream>
 
-#define ROLL_NB 100000	// nb of rolls done for each roll test
+#define ROLL_NB 10000	// nb of rolls done for each roll test
+//#define ROLL_NB 1	// nb of rolls done for each roll test
 #define ERRORTAG_TEST "Tests"
 #define ERRORTAG_TEST_L L"Tests"
 
@@ -73,20 +74,43 @@ namespace rfn
 				int t;
 				for (int i = 0; i < ROLL_NB; ++i)
 				{
-					t = roll(test);
-					if (t > result.max)
-						result.max = t;
-					if (t < result.min)
-						result.min = t;
+					if (roll(test, t))
+					{
+						if (t > result.max)
+							result.max = t;
+						if (t < result.min)
+							result.min = t;
+					}
+					else
+					{
+						return false;
+					}
 				}
 
 				return expected == result;
 			}
 	};
 
+	// Test range
 	struct FunctorRangeTest
 	{
 		bool operator()(ustring test, Range expected, void*, Range& result)
+		{
+			if (Parser::parseRange(test, result))
+			{
+				return expected == result;
+			}
+			else
+			{
+				return false;
+			}
+		}
+	};
+
+	// Test tableentry parsing
+	struct FunctorTableEntryTest
+	{
+		bool operator()(ustring test, TableEntry expected, void*, TableEntry& result)
 		{
 			if (Parser::parseRange(test, result))
 			{
@@ -198,33 +222,26 @@ namespace rfn
 		dictionary.set(L"Number", L"481516");
 		dictionary.set(L"Pi", L"3.1415");
 
-		// syntax
-		{
-			testSet.push_back(TAR(L"[1d6]", Range(1,6)));
-			testSet.push_back(TAR(L"[1d20 + 5]", Range(6, 25)));
-			testSet.push_back(TAR(L"[1d20 + 4d2 + 17]", Range(22, 35)));
-		}
-
 		// Basic rolls
 		{
-			testSet.push_back(TAR(L"1d6", Range(1, 6)));
-			testSet.push_back(TAR(L"2d6", Range(2,12)));
-			testSet.push_back(TAR(L"1d12", Range(1, 12)));
-			testSet.push_back(TAR(L"12d2", Range(1, 24)));
-			testSet.push_back(TAR(L"1d20", Range(1, 20)));
+			testSet.push_back(TAR(L"[1d6]", Range(1, 6)));
+			testSet.push_back(TAR(L"[2d6]", Range(2,12)));
+			testSet.push_back(TAR(L"[1d12]", Range(1, 12)));
+			testSet.push_back(TAR(L"[12d2]", Range(12, 24)));
+			testSet.push_back(TAR(L"[1d20]", Range(1, 20)));
 		}
 
 		// basic modifiers
 		{
-			testSet.push_back(TAR(L"1d20 + 5", Range(6, 25)));
-			testSet.push_back(TAR(L"4d6 - 5", Range(-1, 19)));
-			testSet.push_back(TAR(L"1d2 + 17 - 2", Range(16, 17)));
+			testSet.push_back(TAR(L"[1d20 + 5]", Range(6, 25)));
+			testSet.push_back(TAR(L"[4d6 - 5]", Range(-1, 19)));
+			testSet.push_back(TAR(L"[1d2 + 17 - 2]", Range(16, 17)));
 		}
 
 		// Complex rolls
 		{
-			testSet.push_back(TAR(L"1d20 + 4d2 + 17", Range(22, 35)));
-			testSet.push_back(TAR(L"1d1 + 1d2+ 1d3 + 1d4 +1d5", Range(5, 15)));
+			testSet.push_back(TAR(L"[1d20 + 4d2 + 17]", Range(22, 45)));
+			testSet.push_back(TAR(L"[1d1 + 1d2+ 1d3 + 1d4 +1d5]", Range(5, 15)));
 		}
 
 		Tester<Range> t;
@@ -263,7 +280,54 @@ namespace rfn
 
 	float Test::testTableRequired(bool displayFailed)
 	{
-		return 0.0f;
+		typedef std::pair<ustring, Table> TAR;
+		typedef std::vector<TAR> TARList;
+		typedef std::vector<Table> RList;
+
+		TARList testSet;
+		TARList failedSet;
+		RList failedResults;
+
+		// Basic rolls
+		{
+			testSet.push_back(TAR(L"[1d6]", Range(1, 6)));
+		}
+
+		// basic modifiers
+		{
+			testSet.push_back(TAR(L"[1d20 + 5]", Range(6, 25)));
+			testSet.push_back(TAR(L"[4d6 - 5]", Range(-1, 19)));
+			testSet.push_back(TAR(L"[1d2 + 17 - 2]", Range(16, 17)));
+		}
+
+		// Complex rolls
+		{
+			testSet.push_back(TAR(L"[1d20 + 4d2 + 17]", Range(22, 45)));
+			testSet.push_back(TAR(L"[1d1 + 1d2+ 1d3 + 1d4 +1d5]", Range(5, 15)));
+		}
+
+		Tester<Range> t;
+		float result = t.test(testSet, failedSet, failedResults, FunctorRollTest());
+
+		if (displayFailed)
+		{
+			if (!failedSet.empty())
+			{
+				for (int i = 0; i < failedSet.size(); ++i)
+				{
+					Logger::logs(L"\n----Test     : "
+						+ failedSet[i].first + L"\n"
+						+ L"----Expected : " + (failedSet[i].second).toUstring() + L"\n"
+						+ L"----Got      : " + failedResults[i].toUstring().data()
+						, ERRORTAG_TEST_L
+						, L"condition resolution tests");
+				}
+			}
+		}
+
+		Logger::logs("Condition resolution results : " + std::to_string(result) + " %"
+			, ERRORTAG_TEST);
+		return result;
 	}
 
 	float Test::testTableRange(bool displayFailed)

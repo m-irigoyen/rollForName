@@ -1,5 +1,5 @@
-#include "Parser.h"
-#include "Logger.h"
+#include <rollForName/Parser.h>
+#include <rollForName/Logger.h>
 
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
@@ -18,6 +18,13 @@ BOOST_FUSION_ADAPT_STRUCT(
 	(int, max)
 	)
 
+BOOST_FUSION_ADAPT_STRUCT(
+	rfn::Roll,
+	(unsigned int, nbDices)
+	(unsigned int, nbFaces)
+	(std::vector<int>, modifiers)
+	)
+
 namespace rfn
 {
 	// Parser that reads an affectation operator
@@ -33,7 +40,7 @@ namespace rfn
 		qi::rule<Iterator, ustring(), Skipper> start;
 	};
 
-	// Parser that reads an affectation operator
+	// Parser that reads a range
 	template <typename Iterator, typename Skipper = boost::spirit::standard_wide::space_type>
 	struct rangeParser : public qi::grammar<Iterator, Range(), Skipper>
 	{
@@ -49,6 +56,31 @@ namespace rfn
 
 		qi::rule<Iterator, Range(), Skipper> start;
 	};
+
+	// Parser that reads a dice roll
+	template <typename Iterator, typename Skipper = boost::spirit::standard_wide::space_type>
+	struct rollParser : public qi::grammar<Iterator, std::vector<Roll>(), Skipper>
+	{
+	public:
+		rollParser() : rollParser::base_type(start)
+		{
+			roll %= qi::int_
+				>> qi::no_case[qi::lit("d")]
+				>> qi::int_
+				>> *(qi::int_
+					>> (&qi::lit("+") | &qi::lit("-") | &qi::lit("]")));
+
+			start %= qi::lit("[")
+				>> *roll
+				>> qi::lit("]");
+		}
+
+		qi::rule<Iterator, Roll, Skipper> roll;
+		qi::rule<Iterator, std::vector<Roll>(), Skipper> start;
+	};
+
+
+		// FUNCTIONS
 
 	bool Parser::isTableName(const ustring& line, ustring& name)
 	{
@@ -81,6 +113,26 @@ namespace rfn
 		ustring lineCopy = line;
 
 		rangeParser<ustring::iterator, boost::spirit::standard_wide::space_type> parser;
+		ustring::iterator it = lineCopy.begin();
+		bool parseResult = qi::phrase_parse(it, lineCopy.end()
+			, parser
+			, boost::spirit::standard_wide::space
+			, result);
+
+		if (parseResult)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	bool Parser::parseRoll(const ustring & line, std::vector<Roll> & result)
+	{
+		ustring lineCopy = line;
+
+		rollParser<ustring::iterator, boost::spirit::standard_wide::space_type> parser;
 		ustring::iterator it = lineCopy.begin();
 		bool parseResult = qi::phrase_parse(it, lineCopy.end()
 			, parser

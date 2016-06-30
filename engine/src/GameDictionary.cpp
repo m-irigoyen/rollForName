@@ -1,4 +1,5 @@
-#include "GameDictionary.h"
+#include <rollForName/GameDictionary.h>
+#include <rollForName/StringHelpers.h>
 
 #include <algorithm>
 
@@ -8,6 +9,7 @@ namespace rfn
 	static inline void makeValidId(ustring& s)
 	{
 		std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+		removeSpaces(s);
 	}
 
 	GameDictionary::GameDictionary()
