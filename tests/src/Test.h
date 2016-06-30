@@ -10,8 +10,5 @@ namespace rfn
 		static float testAll(bool displayFailed = false);
 		static float testRoll(bool displayFailed = false);
 		static float testTableParse(bool displayFailed = false);
-		static float testTableName(bool displayFailed = false);
-		static float testTableRequired(bool displayFailed = false);
-		static float testTableRange(bool displayFailed = false);
 	};
 }

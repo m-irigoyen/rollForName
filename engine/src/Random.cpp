@@ -20,11 +20,11 @@ namespace rfn
 			{
 				rollResult += roll(oneRoll);
 			}
+			return true;
 		}
 		else
 		{
 			return false;
 		}
 	}
-
 }

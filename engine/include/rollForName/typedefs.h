@@ -47,16 +47,19 @@ namespace rfn
 
 	struct TableEntry
 	{
+		TableEntry(Range r, ustring name, ustring description, ustring toOther) :
+			range(r), name(name), description(description), toOtherTable(toOther) {}
+
 		Range range;
 		ustring name;
-		ustring descrpition;
+		ustring description;
 		ustring toOtherTable;
 
 		void clear() {
 			range.min = 0;
 			range.max = 0;
 			name.clear();
-			descrpition.clear();
+			description.clear();
 			toOtherTable.clear();
 		}
 	};

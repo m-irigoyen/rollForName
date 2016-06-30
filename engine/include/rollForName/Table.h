@@ -7,8 +7,11 @@
 
 namespace rfn
 {
+	//class Test;
 	class Table
 	{
+		friend class Test;
+
 	public :
 		Table();
 
@@ -17,8 +20,6 @@ namespace rfn
 
 		TableEntry getRandomEntry();
 		TableEntry getEntryAt(int x);
-
-		void setName(ustring name);
 		void addEntry(TableEntry entry);
 
 		void clear();
@@ -28,5 +29,6 @@ namespace rfn
 		entryVector entries_;
 		ustring roll_;
 		ustring requiredTables_;
+
 	};
 }

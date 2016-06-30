@@ -270,16 +270,6 @@ namespace rfn
 
 	float Test::testTableParse(bool displayFailed)
 	{
-		return 0.0f;
-	}
-
-	float Test::testTableName(bool displayFailed)
-	{
-		return 0.0f;
-	}
-
-	float Test::testTableRequired(bool displayFailed)
-	{
 		typedef std::pair<ustring, Table> TAR;
 		typedef std::vector<TAR> TARList;
 		typedef std::vector<Table> RList;
@@ -288,8 +278,23 @@ namespace rfn
 		TARList failedSet;
 		RList failedResults;
 
-		// Basic rolls
+		GameDictionary dictionary;
+		dictionary.set(L"key", L"testValue");
+		dictionary.set(L"key2", L"testValue2");
+		dictionary.set(L"Digit", L"0");
+		dictionary.set(L"Number", L"481516");
+		dictionary.set(L"Pi", L"3.1415");
+
+		// Simple table
 		{
+			Table t;
+			t.name_ = L"firsttest";
+			t.roll_ = L"[1d6]";
+			t.entries_.push_back(TableEntry(Range(1, 3), L"entry1", L"This is the first entry", L""));
+			t.entries_.push_back(TableEntry(Range(4, 6), L"entry2", L"This is the second entry", L""));
+
+			ustring line =
+				L"FirstTest\n	[1d6]\n	{\n	* <1_3> \"entry1\" : \"This is the first entry\"\n		* <3_6> \"entry2\" : \"This is the second entry\"\n }\n";
 			testSet.push_back(TAR(L"[1d6]", Range(1, 6)));
 		}
 
@@ -328,6 +333,11 @@ namespace rfn
 		Logger::logs("Condition resolution results : " + std::to_string(result) + " %"
 			, ERRORTAG_TEST);
 		return result;
+	}
+
+	float Test::testTableName(bool displayFailed)
+	{
+		return 0.0f;
 	}
 
 	float Test::testTableRange(bool displayFailed)
