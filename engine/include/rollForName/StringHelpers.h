@@ -184,6 +184,12 @@ static inline bool compare(ustring s1, ustring s2)
 	return s1.compare(s2) == 0;
 }
 
+static inline void makeValidId(ustring& s)
+{
+	std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+	removeSpaces(s);
+}
+
 
 
 //

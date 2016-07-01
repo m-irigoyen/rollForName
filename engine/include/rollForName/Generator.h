@@ -1,21 +1,27 @@
 #pragma once
 
-#include "TableManager.h"
+#include <rollForName/typedefs.h>
 
 namespace rfn
 {
-	class Generator
+	struct Generator
 	{
-		Generator();
+		Generator(ustring name = L""
+			, ustring requiredGenerators = L""
+			, ustring requiredTables = L"");
+		Generator(ustring name
+			, ustring requiredGenerators
+			, ustring requiredTables
+			, ustringVector instructions);
 
-		//TODO : console command arguments
-		bool init();
+		bool isValid();
+
+		bool generate(ustring& generated);
 
 
-
-	private:
-		TableManager manager_;
-
-		bool ready_;
+		ustring name;
+		ustring requiredGenerators;
+		ustring requiredTables;
+		ustringVector instructions;
 	};
 }

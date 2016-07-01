@@ -6,12 +6,6 @@
 namespace rfn
 {
 
-	static inline void makeValidId(ustring& s)
-	{
-		std::transform(s.begin(), s.end(), s.begin(), ::tolower);
-		removeSpaces(s);
-	}
-
 	GameDictionary::GameDictionary()
 	{
 	}

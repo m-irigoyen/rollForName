@@ -2,28 +2,24 @@
 
 #include <rollForName/FileUtils.h>
 #include <rollForName/Logger.h>
+#include <rollForName/StringHelpers.h>
 
 #define ERRORTAG_GENERATOR "Generator"
 
 namespace rfn
 {
-
-}
-
-rfn::Generator::Generator() : ready_(false)
-{
-}
-
-bool rfn::Generator::init()
-{
-	std::string tableName = "base.tbl";
-	if (!manager_.loadTables(tableName))
+	Generator::Generator(ustring name, ustring requiredGenerators, ustring requiredTables)
 	{
-		Logger::errlogs("Couldn't load tables " + tableName
-			, ERRORTAG_GENERATOR, "init");
-		return false;
 	}
 
-	ready_ = true;
-	return true;
+	Generator::Generator(ustring name, ustring requiredGenerators, ustring requiredTables, ustringVector instructions)
+	{
+	}
+
+
+	bool Generator::isValid()
+	{
+		return String
+	}
 }
+

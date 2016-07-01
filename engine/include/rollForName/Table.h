@@ -7,11 +7,8 @@
 
 namespace rfn
 {
-	//class Test;
-	class Table
+	struct Table
 	{
-		friend class Test;
-
 	public :
 		Table();
 
@@ -24,11 +21,17 @@ namespace rfn
 
 		void clear();
 
-	protected:
-		ustring name_;
-		entryVector entries_;
-		ustring roll_;
-		ustring requiredTables_;
+		bool operator==(const Table& other);
 
+		//! returns true if the roll's range is respected by the table entries
+		bool isValid();
+
+		//! Orders the entries in ascending order of range
+		void orderEntries();
+
+		ustring name;
+		entryVector entries;
+		ustring roll;
+		ustring requiredTables;
 	};
 }

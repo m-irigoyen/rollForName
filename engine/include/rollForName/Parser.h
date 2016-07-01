@@ -25,11 +25,16 @@ namespace rfn
 		//! Returns true if the line is a table name
 		static bool isTableName(const ustring& line, ustring& name);
 
-		//! If a table was succesfully parsed, returns true
+		//! If the parse was successful, returns true
+		static bool parseTableEntry(const ustring& line, TableEntry& t);
+
+		//! If the parse was successful, returns true
 		static bool parseTable(const ustring& line, Table& t);
 
+		//! If the parse was successful, returns true
 		static bool parseRange(const ustring& line, Range& result);
 
+		//! If the parse was successful, returns true
 		static bool parseRoll(const ustring& line, std::vector<Roll>& result);
 	};
 }

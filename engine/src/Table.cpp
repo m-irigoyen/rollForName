@@ -1,5 +1,7 @@
 #include <rollForName/Table.h>
 
+#include <algorithm>
+
 namespace rfn
 {
 	Table::Table()
@@ -7,21 +9,21 @@ namespace rfn
 	}
 	int rfn::Table::size()
 	{
-		return entries_.size();
+		return entries.size();
 	}
 
 	TableEntry rfn::Table::getRandomEntry()
 	{
-		return entries_.at(randomIntInclusive(0, entries_.size() - 1));
+		return entries.at(randomIntInclusive(0, entries.size() - 1));
 	}
 
 	TableEntry Table::getEntryAt(int x)
 	{
-		if ((entries_.size() > 0)
+		if ((entries.size() > 0)
 			&& (x >= 0)
-			&& (x < entries_.size()))
+			&& (x < entries.size()))
 		{
-			return entries_.at(x);
+			return entries.at(x);
 		}
 		else
 		{
@@ -29,19 +31,61 @@ namespace rfn
 		}
 	}
 
-	void Table::setName(ustring name)
-	{
-		name_ = name;
-	}
-
 	void Table::addEntry(TableEntry entry)
 	{
-		entries_.push_back(entry);
+		entries.push_back(entry);
 	}
 
 	void Table::clear()
 	{
-		entries_.clear();
+		entries.clear();
+	}
+
+	bool Table::operator==(const Table & other)
+	{
+		// Checking entries
+		if (entries.size() != other.entries.size())
+			return false;
+
+		for (int i = 0; i < entries.size(); ++i)
+		{
+			if (entries.at(i) != other.entries.at(i))
+				return false;
+		}
+		// Comparing the rest
+		return (name == other.name)
+			&& (roll == other.roll)
+			&& (requiredTables == other.requiredTables);
+	}
+
+	bool Table::isValid()
+	{
+		// Check there are no range intersections
+		for (int i = 0; i < entries.size(); ++i)
+		{
+			for (int j = 0; j < entries.size(); ++i)
+			{
+				if (i != j)
+				{
+					entries.at(i).range.makeValid();
+					entries.at(j).range.makeValid();
+					if (entries.at(i).range.intersects(entries.at(j).range))
+					{
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
+	void Table::orderEntries()
+	{
+		for (TableEntry te : entries)
+		{
+			te.range.makeValid();
+		}
+		std::sort(entries.begin(), entries.end());
 	}
 
 }
