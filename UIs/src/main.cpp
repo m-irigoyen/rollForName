@@ -5,7 +5,8 @@ using namespace rfn;
 int main()
 {
 	RollForName rfn;
-	rfn.loadTablesFromFile("test");
+	rfn.loadTablesFromFile("testTable");
+	rfn.loadTablesFromFile("testGenerator");
 
 	return 0;
 }

@@ -249,6 +249,19 @@ namespace rfn
 		qi::rule<Iterator, Generator(), Skipper> start;
 	};
 
+	// Parser that reads a goto description, and returns the name
+	template <typename Iterator, typename Skipper = boost::spirit::standard_wide::space_type>
+	struct gotoDescriptionParser : public qi::grammar<Iterator, ustring(), Skipper>
+	{
+	public:
+		gotoDescriptionParser() : gotoDescriptionParser::base_type(start)
+		{
+			start %= qi::lit("->") >> qi::lexeme[*qi::char_];
+		}
+
+		qi::rule<Iterator, ustring(), Skipper> start;
+	};
+
 
 		// FUNCTIONS
 
@@ -272,14 +285,7 @@ namespace rfn
 			, boost::spirit::standard_wide::space
 			, name);
 
-		if (parseResult)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return parseResult;
 	}
 
 	bool rfn::Parser::parseTableEntry(const ustring & line, TableEntry & t)
@@ -403,14 +409,7 @@ namespace rfn
 			, boost::spirit::standard_wide::space
 			, result);
 
-		if (parseResult)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return parseResult;
 	}
 
 
@@ -425,14 +424,7 @@ namespace rfn
 			, boost::spirit::standard_wide::space
 			, result);
 
-		if (parseResult)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return parseResult;
 	}
 	bool rfn::Parser::parseGenerator(const ustring & line, Generator & result)
 	{
@@ -447,12 +439,49 @@ namespace rfn
 
 		if (parseResult)
 		{
+			makeValidIdInPlace(result.name);
 			return true;
 		}
 		else
 		{
 			return false;
 		}
+	}
+	bool rfn::Parser::parseGenerator(ustring::iterator& begin
+		, ustring::iterator end
+		, Generator& result)
+	{
+		generatorParser<ustring::iterator, boost::spirit::standard_wide::space_type> parser;
+		bool parseResult = qi::phrase_parse(begin, end
+			, parser
+			, boost::spirit::standard_wide::space
+			, result);
+
+		if (parseResult)
+		{
+			makeValidIdInPlace(result.name);
+			return true;
+		}
+		else
+		{
+			Logger::errlogs(L"Failed to parse given iterators \n"
+				, ERRORTAG_PARSER_L
+				, L"parseTable");
+			return false;
+		}
+	}
+	bool rfn::Parser::parseGoto(const ustring & line, ustring & result)
+	{
+		ustring lineCopy = line;
+
+		gotoDescriptionParser<ustring::iterator, boost::spirit::standard_wide::space_type> parser;
+		ustring::iterator it = lineCopy.begin();
+		bool parseResult = qi::phrase_parse(it, lineCopy.end()
+			, parser
+			, boost::spirit::standard_wide::space
+			, result);
+
+		return parseResult;
 	}
 }
 

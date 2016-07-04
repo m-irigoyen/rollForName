@@ -16,9 +16,6 @@ namespace rfn
 			, ustring requiredTables
 			, std::vector<Instruction> instructions);
 
-		//TODO : that. If isMain, then the string will contain some sort of header.
-		bool generate(ustring& generated, bool isMain);
-
 		bool isValid();
 
 		bool operator==(const Generator& other);

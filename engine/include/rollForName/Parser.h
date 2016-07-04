@@ -34,7 +34,6 @@ namespace rfn
 
 		//! If the parse was successful, returns true
 		static bool parseTable(const ustring& line, Table& t);
-
 		static bool parseTable(ustring::iterator& begin, ustring::iterator end, Table& t);
 
 		//! If the parse was successful, returns true
@@ -48,5 +47,9 @@ namespace rfn
 
 		//! If the parse was successful, returns true
 		static bool parseGenerator(const ustring& line, Generator& gen);
+		static bool parseGenerator(ustring::iterator& begin, ustring::iterator end, Generator& gen);
+
+		//! If the parse was successful, returns true
+		static bool parseGoto(const ustring& line, ustring& gotoName);
 	};
 }
