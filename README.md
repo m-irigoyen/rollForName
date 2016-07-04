@@ -1,4 +1,4 @@
-rollForName is a tool to randomly generate stuff. The whole thing is very simple : write random tables for anything, then tell the software from which tables to choose, and in which order, all using simple txt files. rollForName uses a very simple syntax for writing files. Its easy to understand, easy to use, and yet gives you enough freedom to generate just about anything.
+	rollForName is a tool to randomly generate stuff. The whole thing is very simple : write random tables for anything, then tell the software from which tables to choose, and in which order, all using simple txt files. rollForName uses a very simple syntax for writing files. Its easy to understand, easy to use, and yet gives you enough freedom to generate just about anything.
 
 How does it work?
 rollForName works with 2 different files : table files, and generation files.
@@ -16,8 +16,8 @@ GenericFantasyCharacterExample
 REQUIRED GENERATORS : general/languages/common
 REQUIRED TABLES : fantasy/jobs fantasy/races/
 
-t: gender
-t: age
+t: "gender"
+t: "age"
 g: "common language"
 t: "common races"
 t: "fantasy job"

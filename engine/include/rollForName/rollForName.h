@@ -4,6 +4,7 @@
 #include <rollForName/TableManager.h>
 
 #include <map>
+#include <fstream>
 
 namespace rfn
 {
@@ -14,8 +15,8 @@ namespace rfn
 
 		RollForName();
 
-		bool loadTablesFromFile(std::string fileName);
-		bool loadGeneratorsFromFile(std::string fileName);
+		bool loadTablesFromFile(std::string fileName, bool completePath = false);
+		bool loadGeneratorsFromFile(std::string fileName, bool completePath = false);
 		bool loadFromFile(std::string fileName);
 
 		bool generate(std::string generatorName);
@@ -23,5 +24,11 @@ namespace rfn
 	private:
 		std::map<ustring, Generator> generators_;
 		std::map<ustring, Table> tables_;
+
+		// Open file
+		bool openFile(std::string fileName, std::wifstream& stream);
+
+		bool existsTable(ustring tableName);
+		bool existsGenerator(ustring tableName);
 	};
 }

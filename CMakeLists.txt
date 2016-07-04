@@ -4,3 +4,4 @@ PROJECT("rollForNameDev")
 
 add_subdirectory(engine)
 add_subdirectory(tests)
+add_subdirectory(UIs)

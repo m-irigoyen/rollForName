@@ -4,6 +4,7 @@
 
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix_core.hpp>
+#include <boost/spirit/include/phoenix_bind.hpp>
 #include <boost/spirit/include/phoenix_operator.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 
@@ -48,6 +49,22 @@ BOOST_FUSION_ADAPT_STRUCT(
 	(rfn::entryVector, entries)
 )
 
+// Instruction
+BOOST_FUSION_ADAPT_STRUCT(
+	rfn::Instruction,
+	(bool, generator)
+	(rfn::ustring, name)
+)
+
+// Generator
+BOOST_FUSION_ADAPT_STRUCT(
+	rfn::Generator,
+	(rfn::ustring, name)
+	(rfn::ustring, requiredGenerators)
+	(rfn::ustring, requiredTables)
+	(std::vector<rfn::Instruction>, instructions)
+)
+
 namespace rfn
 {
 	// Parser that reads an affectation operator
@@ -84,12 +101,21 @@ namespace rfn
 	public:
 		rangeParser() : rangeParser::base_type(start)
 		{
-			start %= qi::lit("<")
+			range %= qi::lit("<")
 				>> qi::int_
 				>> qi::lit("_")
 				>> qi::int_
 				>> qi::lit(">");
+
+			nb = qi::lit("<")
+				>> qi::int_[phoenix::bind(&Range::setNumber, qi::_val, qi::_1)]
+				>> qi::lit(">");
+
+			start %= nb | range;
 		}
+
+		qi::rule<Iterator, Range(), Skipper> nb;
+		qi::rule<Iterator, Range(), Skipper> range;
 
 		qi::rule<Iterator, Range(), Skipper> start;
 	};
@@ -142,8 +168,10 @@ namespace rfn
 			start %= (qi::lit("*") | qi::lit("-"))
 				>> range
 				>> quotedText
-				>> qi::lit(":")
-				>> quotedText;
+				>> (
+					(qi::lit(":") >> quotedText)
+					| qi::attr("")
+					);
 		}
 
 		rangeParser<Iterator, Skipper> range;
@@ -175,8 +203,63 @@ namespace rfn
 		qi::rule<Iterator, Table(), Skipper> start;
 	};
 
+	// Parser that reads an Instruction
+	template <typename Iterator, typename Skipper = boost::spirit::standard_wide::space_type>
+	struct instructionParser : public qi::grammar<Iterator, Instruction(), Skipper>
+	{
+	public:
+		instructionParser() : instructionParser::base_type(start)
+		{
+			start %= (
+				(qi::no_case[qi::lit("t") >> qi::lit(":")] >> qi::attr(false))
+				| (qi::no_case[qi::lit("g") >> qi::lit(":")] >> qi::attr(true))
+				| qi::attr(true)
+				)
+				>> quotedText;
+		}
+
+		quotedTextParser<Iterator, Skipper> quotedText;
+
+		qi::rule<Iterator, Instruction(), Skipper> start;
+	};
+
+	// Parser that reads a Generator
+	template <typename Iterator, typename Skipper = boost::spirit::standard_wide::space_type>
+	struct generatorParser : public qi::grammar<Iterator, Generator(), Skipper>
+	{
+	public:
+		generatorParser() : generatorParser::base_type(start)
+		{
+			start %= (
+				quotedText	// name
+				>> (
+				(qi::no_case[qi::lit("required generators : ")] >> quotedText)
+					| qi::attr("")
+					)
+				>> (
+				(qi::no_case[qi::lit("required tables : ")] >> quotedText)
+					| qi::attr("")
+					)
+				>> +instruction);
+		}
+
+		instructionParser<Iterator, Skipper> instruction;
+		quotedTextParser<Iterator, Skipper> quotedText;
+
+		qi::rule<Iterator, Generator(), Skipper> start;
+	};
+
 
 		// FUNCTIONS
+
+	bool rfn::Parser::findNextBracketEnd(ustring::iterator& begin, ustring::iterator end, ustring& skipped)
+	{
+		return qi::phrase_parse(begin
+			, end
+			, (*qi::char_ - '}') >> qi::char_('}')
+			, boost::spirit::standard_wide::space
+			, skipped);
+	}
 
 	bool Parser::isTableName(const ustring& line, ustring& name)
 	{
@@ -223,6 +306,7 @@ namespace rfn
 				+ ustring(lineCopy, it - lineCopy.begin(), ustring::npos)
 				, ERRORTAG_PARSER_L
 				, L"parseTableEntry");
+			return false;
 		}
 	}
 
@@ -239,7 +323,7 @@ namespace rfn
 
 		if (parseResult)
 		{
-			makeValidId(t.name);
+			makeValidIdInPlace(t.name);
 			// Making valid ranges
 			for (TableEntry te : t.entries)
 			{
@@ -255,6 +339,35 @@ namespace rfn
 				+ ustring(lineCopy, it - lineCopy.begin(), ustring::npos)
 				, ERRORTAG_PARSER_L
 				, L"parseTable");
+			return false;
+		}
+	}
+
+	bool rfn::Parser::parseTable(ustring::iterator& begin, ustring::iterator end, Table & t)
+	{
+		tableParser<ustring::iterator, boost::spirit::standard_wide::space_type> parser;
+		bool parseResult = qi::phrase_parse(begin, end
+			, parser
+			, boost::spirit::standard_wide::space
+			, t);
+
+		if (parseResult)
+		{
+			makeValidIdInPlace(t.name);
+			// Making valid ranges
+			for (TableEntry te : t.entries)
+			{
+				te.range.makeValid();
+			}
+
+			return true;
+		}
+		else
+		{
+			Logger::errlogs(L"Failed to parse given iterators \n"
+				, ERRORTAG_PARSER_L
+				, L"parseTable");
+			return false;
 		}
 	}
 
@@ -284,6 +397,48 @@ namespace rfn
 		ustring lineCopy = line;
 
 		rollParser<ustring::iterator, boost::spirit::standard_wide::space_type> parser;
+		ustring::iterator it = lineCopy.begin();
+		bool parseResult = qi::phrase_parse(it, lineCopy.end()
+			, parser
+			, boost::spirit::standard_wide::space
+			, result);
+
+		if (parseResult)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+
+	bool rfn::Parser::parseGeneratorInstruction(const ustring & line, Instruction & result)
+	{
+		ustring lineCopy = line;
+
+		instructionParser<ustring::iterator, boost::spirit::standard_wide::space_type> parser;
+		ustring::iterator it = lineCopy.begin();
+		bool parseResult = qi::phrase_parse(it, lineCopy.end()
+			, parser
+			, boost::spirit::standard_wide::space
+			, result);
+
+		if (parseResult)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	bool rfn::Parser::parseGenerator(const ustring & line, Generator & result)
+	{
+		ustring lineCopy = line;
+
+		generatorParser<ustring::iterator, boost::spirit::standard_wide::space_type> parser;
 		ustring::iterator it = lineCopy.begin();
 		bool parseResult = qi::phrase_parse(it, lineCopy.end()
 			, parser

@@ -12,13 +12,13 @@ namespace rfn
 
 	bool GameDictionary::exists(ustring key) const
 	{
-		makeValidId(key);
+		makeValidIdInPlace(key);
 		return dictionary_.find(key) != dictionary_.end();
 	}
 
 	ustring GameDictionary::get(ustring key)
 	{
-		makeValidId(key);
+		makeValidIdInPlace(key);
 		Dictionary::iterator it = dictionary_.find(key);
 		if (it != dictionary_.end())
 		{
@@ -32,7 +32,7 @@ namespace rfn
 
 	void GameDictionary::set(ustring key, ustring value)
 	{
-		makeValidId(key);
+		makeValidIdInPlace(key);
 		Dictionary::iterator it = dictionary_.find(key);
 		if (it != dictionary_.end())
 		{

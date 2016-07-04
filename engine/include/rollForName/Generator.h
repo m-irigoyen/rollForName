@@ -4,6 +4,8 @@
 
 namespace rfn
 {
+
+
 	struct Generator
 	{
 		Generator(ustring name = L""
@@ -12,16 +14,18 @@ namespace rfn
 		Generator(ustring name
 			, ustring requiredGenerators
 			, ustring requiredTables
-			, ustringVector instructions);
+			, std::vector<Instruction> instructions);
+
+		//TODO : that. If isMain, then the string will contain some sort of header.
+		bool generate(ustring& generated, bool isMain);
 
 		bool isValid();
 
-		bool generate(ustring& generated);
-
+		bool operator==(const Generator& other);
 
 		ustring name;
 		ustring requiredGenerators;
 		ustring requiredTables;
-		ustringVector instructions;
+		std::vector<Instruction> instructions;
 	};
 }

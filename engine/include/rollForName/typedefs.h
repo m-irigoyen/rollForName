@@ -9,6 +9,22 @@ namespace rfn
 	typedef std::string string;
 	typedef std::vector<ustring> ustringVector;
 
+	// One line instruction parsed in generator files
+	struct Instruction
+	{
+		Instruction(bool generator = false, ustring name = L"")
+			: generator(generator), name(name) {}
+
+		bool generator;
+		ustring name;
+
+		bool operator==(const Instruction& other)
+		{
+			return (generator == other.generator)
+				&& (name.compare(other.name) == 0);
+		}
+	};
+
 	struct Range
 	{
 		Range::Range(int min = 0, int max = 0) : min(min), max(max) {}
@@ -48,6 +64,12 @@ namespace rfn
 			{
 				std::swap(min, max);
 			}
+		}
+
+		void setNumber(int number)
+		{
+			min = number;
+			max = number;
 		}
 
 		int size()

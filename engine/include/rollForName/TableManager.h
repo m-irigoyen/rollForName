@@ -11,6 +11,8 @@ namespace rfn
 
 		bool loadTables(std::string fileName);
 		void clearTables();
+
+	private:
 	};
 
 }

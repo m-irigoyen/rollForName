@@ -63,7 +63,7 @@ namespace rfn
 		// Check there are no range intersections
 		for (int i = 0; i < entries.size(); ++i)
 		{
-			for (int j = 0; j < entries.size(); ++i)
+			for (int j = 0; j < entries.size(); ++j)
 			{
 				if (i != j)
 				{
