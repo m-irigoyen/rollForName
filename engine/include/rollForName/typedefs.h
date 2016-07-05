@@ -23,6 +23,11 @@ namespace rfn
 			return (generator == other.generator)
 				&& (name.compare(other.name) == 0);
 		}
+
+		bool operator!=(const Instruction& other)
+		{
+			return !(*this == other);
+		}
 	};
 
 	struct Range

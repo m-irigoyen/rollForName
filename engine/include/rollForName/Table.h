@@ -32,6 +32,6 @@ namespace rfn
 		ustring name;
 		entryVector entries;
 		ustring roll;
-		ustring requiredTables;
+		ustringVector requiredTables;
 	};
 }

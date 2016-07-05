@@ -82,6 +82,13 @@ static inline ustring makeValidId(const ustring& s)
 	return copy;
 }
 
+static inline ustring stringToUstring(const std::string& s)
+{
+	ustring result;
+	result.assign(s.begin(), s.end());
+	return result;
+}
+
 
 
 //

@@ -8,12 +8,13 @@ namespace rfn
 
 	struct Generator
 	{
-		Generator(ustring name = L""
-			, ustring requiredGenerators = L""
-			, ustring requiredTables = L"");
+		Generator(ustring name = L"");
 		Generator(ustring name
-			, ustring requiredGenerators
-			, ustring requiredTables
+			, ustringVector requiredGenerators
+			, ustringVector requiredTables);
+		Generator(ustring name
+			, ustringVector requiredGenerators
+			, ustringVector requiredTables
 			, std::vector<Instruction> instructions);
 
 		bool isValid();
@@ -21,8 +22,8 @@ namespace rfn
 		bool operator==(const Generator& other);
 
 		ustring name;
-		ustring requiredGenerators;
-		ustring requiredTables;
+		ustringVector requiredGenerators;
+		ustringVector requiredTables;
 		std::vector<Instruction> instructions;
 	};
 }

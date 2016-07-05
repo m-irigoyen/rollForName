@@ -1,28 +1,33 @@
 #pragma once
 
-#include <string>
+#include <rollForName/typedefs.h>
 
 #define DEBUG
 
 namespace rfn
 {
 #ifdef DEBUG
-	const std::string PATH_RES = "../../sources/res/";
+	const ustring PATH_RES = L"../../sources/res/";
 #else
-	const std::string PATH_RES = "res/";
+	const ustring PATH_RES = L"res/";
 #endif
-	const std::string PATH_TABLES = PATH_RES + "tables/";
-	const std::string PATH_GENERATORS = PATH_RES + "generators/";
-	const std::string FILE_EXTENSION = ".rfn";
+	const ustring PATH_TABLES = PATH_RES + L"tables/";
+	const ustring PATH_GENERATORS = PATH_RES + L"generators/";
+	const ustring FILE_EXTENSION = L".rfn";
 
-	static std::string makePathTable(std::string tableName)
+	static ustring makePathTable(const ustring& tableName)
 	{
 		return PATH_TABLES + tableName + FILE_EXTENSION;
 	}
 
-	static std::string makePathGenerator(std::string generatorName)
+	static ustring makePathGenerator(const ustring& generatorName)
 	{
 		return PATH_GENERATORS + generatorName + FILE_EXTENSION;
+	}
+
+	static ustring addExtension(const ustring& name)
+	{
+		return name + FILE_EXTENSION;
 	}
 }
 

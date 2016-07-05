@@ -44,7 +44,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
 	rfn::Table,
 	(rfn::ustring, name)
-	(rfn::ustring, requiredTables)
+	(rfn::ustringVector, requiredTables)
 	(rfn::ustring, roll)
 	(rfn::entryVector, entries)
 )
@@ -60,14 +60,14 @@ BOOST_FUSION_ADAPT_STRUCT(
 BOOST_FUSION_ADAPT_STRUCT(
 	rfn::Generator,
 	(rfn::ustring, name)
-	(rfn::ustring, requiredGenerators)
-	(rfn::ustring, requiredTables)
+	(std::vector<rfn::ustring>, requiredGenerators)
+	(std::vector<rfn::ustring>, requiredTables)
 	(std::vector<rfn::Instruction>, instructions)
 )
 
 namespace rfn
 {
-	// Parser that reads an affectation operator
+	// Parser that reads a ustring between quotes
 	template <typename Iterator, typename Skipper = boost::spirit::standard_wide::space_type>
 	struct quotedTextParser : public qi::grammar<Iterator, ustring(), Skipper> // return type is Table
 	{
@@ -80,7 +80,59 @@ namespace rfn
 		qi::rule<Iterator, ustring(), Skipper> start;
 	};
 
-	// Parser that reads an affectation operator
+	// Parser that reads several quoted texts separated by commas
+	template <typename Iterator, typename Skipper = boost::spirit::standard_wide::space_type>
+	struct quotedTextVectorParser : public qi::grammar<Iterator, std::vector<ustring>(), Skipper> // return type is Table
+	{
+	public:
+		quotedTextVectorParser() : quotedTextVectorParser::base_type(start)
+		{
+			start %= quotedText >> *(quotedText >> qi::lit(","));
+		}
+
+		quotedTextParser<Iterator, Skipper> quotedText;
+		qi::rule<Iterator, std::vector<ustring>(), Skipper> start;
+	};
+
+	// Parser that extracts a file name, without extension, from a filepath (ustring form)
+	template <typename Iterator, typename Skipper = boost::spirit::standard_wide::space_type>
+	struct ustringFileNameParser : public qi::grammar<Iterator, ustring(), Skipper> // return type is Table
+	{
+	public:
+		ustringFileNameParser() : ustringFileNameParser::base_type(start)
+		{
+			path = qi::lexeme[-((qi::lit("/") || qi::lit("\\")))
+				>> *(qi::char_ - (qi::lit("/") || qi::lit("\\")))
+				>> ((qi::lit("/") || qi::lit("\\")))
+			];
+
+			start %= *path >> *(qi::char_ - ".") >> qi::lit(".rfn");
+		}
+
+		qi::rule<Iterator, Skipper> path;
+		qi::rule<Iterator, ustring(), Skipper> start;
+	};
+
+	// Parser that extracts a file name, without extension, from a filepath (std::string form)
+	template <typename Iterator, typename Skipper = boost::spirit::standard::space_type>
+	struct fileNameParser : public qi::grammar<Iterator, std::string(), Skipper> // return type is Table
+	{
+	public:
+		fileNameParser() : fileNameParser::base_type(start)
+		{
+			path = qi::lexeme[-((qi::lit("/") || qi::lit("\\")))
+				>> *(qi::char_ - (qi::lit("/") || qi::lit("\\")))
+				>> ((qi::lit("/") || qi::lit("\\")))
+			];
+
+			start %= *path >> *(qi::char_ - ".") >> qi::lit(".rfn");
+		}
+
+		qi::rule<Iterator, Skipper> path;
+		qi::rule<Iterator, std::string(), Skipper> start;
+	};
+
+	// Parser that reads a table name
 	template <typename Iterator, typename Skipper = boost::spirit::standard_wide::space_type>
 	struct tableNameParser : public qi::grammar<Iterator, ustring(), Skipper> // return type is Table
 	{
@@ -188,15 +240,16 @@ namespace rfn
 		tableParser() : tableParser::base_type(start)
 		{
 			start %= tableName
-				>> ((qi::no_case[qi::lit("required")] >> quotedText) | qi::attr("") )
-				>> rollString
+				>> ((qi::no_case[qi::lit("required")] >> -qi::lit(":") >> quotedTextVector)
+					| qi::attr(ustringVector()) )
+				>> (rollString || qi::attr(""))
 				>> qi::lit("{")
 				>> +(tableEntry)
 				>> qi::lit("}");
 		}
 
 		tableNameParser<Iterator, Skipper>  tableName;
-		quotedTextParser<Iterator, Skipper> quotedText;
+		quotedTextVectorParser<Iterator, Skipper> quotedTextVector;
 		rollStringParser<Iterator, Skipper> rollString;
 		tableEntryParser<Iterator, Skipper> tableEntry;
 
@@ -230,21 +283,23 @@ namespace rfn
 	public:
 		generatorParser() : generatorParser::base_type(start)
 		{
-			start %= (
-				quotedText	// name
-				>> (
-				(qi::no_case[qi::lit("required generators : ")] >> quotedText)
-					| qi::attr("")
-					)
-				>> (
-				(qi::no_case[qi::lit("required tables : ")] >> quotedText)
-					| qi::attr("")
-					)
-				>> +instruction);
+			start %= quotedText	// name
+				>> ( (qi::no_case[qi::lit("required generators")]
+						>> -qi::lit(":")
+						>> quotedTextVector)
+					| qi::attr(ustringVector()) )
+				>> ( ((qi::no_case[qi::lit("required tables")]
+						>> -qi::lit(":")
+						>> *quotedTextVector))
+					| qi::attr(ustringVector()) )
+				>> qi::lit("{")
+				>> +instruction
+				>> qi::lit("}");
 		}
 
 		instructionParser<Iterator, Skipper> instruction;
 		quotedTextParser<Iterator, Skipper> quotedText;
+		quotedTextVectorParser<Iterator, Skipper> quotedTextVector;
 
 		qi::rule<Iterator, Generator(), Skipper> start;
 	};
@@ -413,6 +468,34 @@ namespace rfn
 	}
 
 
+	bool Parser::parseNameFromFilepath(const std::string& line, std::string& result)
+	{
+		std::string lineCopy = line;
+
+		fileNameParser<std::string::iterator, boost::spirit::standard::space_type> parser;
+		std::string::iterator it = lineCopy.begin();
+		bool parseResult = qi::phrase_parse(it, lineCopy.end()
+			, parser
+			, boost::spirit::standard::space
+			, result);
+
+		return parseResult;
+	}
+
+	bool Parser::parseNameFromFilepath(const ustring& line, ustring& result)
+	{
+		ustring lineCopy = line;
+
+		ustringFileNameParser<ustring::iterator, boost::spirit::standard_wide::space_type> parser;
+		ustring::iterator it = lineCopy.begin();
+		bool parseResult = qi::phrase_parse(it, lineCopy.end()
+			, parser
+			, boost::spirit::standard_wide::space
+			, result);
+
+		return parseResult;
+	}
+
 	bool rfn::Parser::parseGeneratorInstruction(const ustring & line, Instruction & result)
 	{
 		ustring lineCopy = line;
@@ -440,12 +523,8 @@ namespace rfn
 		if (parseResult)
 		{
 			makeValidIdInPlace(result.name);
-			return true;
 		}
-		else
-		{
-			return false;
-		}
+		return parseResult;
 	}
 	bool rfn::Parser::parseGenerator(ustring::iterator& begin
 		, ustring::iterator end
@@ -460,15 +539,14 @@ namespace rfn
 		if (parseResult)
 		{
 			makeValidIdInPlace(result.name);
-			return true;
 		}
 		else
 		{
 			Logger::errlogs(L"Failed to parse given iterators \n"
 				, ERRORTAG_PARSER_L
 				, L"parseTable");
-			return false;
 		}
+		return parseResult;
 	}
 	bool rfn::Parser::parseGoto(const ustring & line, ustring & result)
 	{
@@ -481,6 +559,10 @@ namespace rfn
 			, boost::spirit::standard_wide::space
 			, result);
 
+		if (parseResult)
+		{
+			makeValidIdInPlace(result);
+		}
 		return parseResult;
 	}
 }

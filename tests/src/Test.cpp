@@ -93,6 +93,21 @@ namespace rfn
 			}
 	};
 
+
+	struct FunctorNameFromFilepathTest
+	{
+		bool operator()(ustring test, ustring expected, void*, ustring& result)
+		{
+			if (!Parser::parseNameFromFilepath(test, result))
+			{
+				Logger::errlogs(L"Couldn't parse given filepath :\n" + test);
+				return false;
+			}
+
+			return expected.compare(result) == 0;
+		}
+	};
+
 	// Test range
 	struct FunctorRangeTest
 	{
@@ -173,7 +188,7 @@ namespace rfn
 			}
 			else
 			{
-				Logger::errlogs(L"Couldn't parse given test :\n" + test);
+				Logger::errlogs(L"Couldn't parse given Generator :\n" + test);
 				return false;
 			}
 		}
@@ -193,6 +208,7 @@ namespace rfn
 		results.push_back(testTableParse(displayFailed));
 		results.push_back(testInstructionParse(displayFailed));
 		results.push_back(testGeneratorParse(displayFailed));
+		results.push_back(testExtractNameFromPath(displayFailed));
 		results.push_back(testRoll(displayFailed));
 
 		for (float f : results)
@@ -206,6 +222,54 @@ namespace rfn
 		Logger::logNewLine();
 
 		return global;
+	}
+
+	float Test::testExtractNameFromPath(bool displayFailed)
+	{
+		typedef std::pair<ustring, ustring> TAR;
+		typedef std::vector<TAR> TARList;
+		typedef std::vector<ustring> RList;
+
+		TARList testSet;
+		TARList failedSet;
+		RList failedResults;
+
+		// Simple
+		{
+			testSet.push_back(TAR(L"test.rfn", L"test"));
+			testSet.push_back(TAR(L"weird.rfn", L"weird"));
+		}
+
+		// Complete paths
+		{
+			testSet.push_back(TAR(L"C:/WOUALLER/hihi/test.rfn", L"test"));
+			testSet.push_back(TAR(L"C:/ceci/est/un/chemin/ridiculement/long.rfn", L"long"));
+			testSet.push_back(TAR(L"C:\\WOUALLER\\hihi\\test.rfn", L"test"));
+			testSet.push_back(TAR(L"C:\\ceci\\est\\un\\chemin\\ridiculement\\long.rfn", L"long"));
+		}
+
+		Tester<ustring> t;
+		float result = t.test(testSet, failedSet, failedResults, FunctorNameFromFilepathTest());
+
+		if (displayFailed)
+		{
+			if (!failedSet.empty())
+			{
+				for (int i = 0; i < failedSet.size(); ++i)
+				{
+					Logger::logs(L"\n----Test     : "
+						+ failedSet[i].first + L"\n"
+						+ L"----Expected : " + (failedSet[i].second) + L"\n"
+						+ L"----Got      : " + failedResults[i]
+						, ERRORTAG_TEST_L
+						, L"testNameFromPath");
+				}
+			}
+		}
+
+		Logger::logs("Test name from path results : " + std::to_string(result) + " %"
+			, ERRORTAG_TEST);
+		return result;
 	}
 
 	float Test::testRoll(bool displayFailed)
@@ -482,7 +546,7 @@ namespace rfn
 			Table t;
 			t.name = L"anothertest";
 			t.roll = L"[2d4+1]";
-			t.requiredTables = L"races";
+			t.requiredTables.push_back(L"races");
 			t.entries.push_back(TableEntry(Range(2, 3), L"entry1", L"This is a $key"));
 			t.entries.push_back(TableEntry(Range(4, 6), L"entry2", L"This contains a roll [1d20]"));
 			t.entries.push_back(TableEntry(Range(7, 9), L"a simple goto", L"-> races"));
@@ -610,52 +674,52 @@ namespace rfn
 		// Base generator
 		{
 			Generator g;
-			g.name = L"Gen Test";
+			g.name = L"gentest";
 			g.instructions.push_back(Instruction(false, L"table"));
 			g.instructions.push_back(Instruction(true, L"gen"));
 			g.instructions.push_back(Instruction(true, L"default"));
 			ustring line =
-				L"\"Gen Test\"\n	t: \"table\"\n	g: \"gen\"\n \"default\"\n";
+				L"\"Gen Test\"\n	{ t: \"table\"\n	g: \"gen\"\n \"default\"\n }";
 			testSet.push_back(TAR(line, g));
 		}
 
 		// required gen
 		{
 			Generator g;
-			g.name = L"other gen test";
-			g.requiredGenerators = L"another gen";
+			g.name = L"othergentest";
+			g.requiredGenerators.push_back(L"another gen");
 			g.instructions.push_back(Instruction(false, L"table"));
 			g.instructions.push_back(Instruction(true, L"gen"));
 			g.instructions.push_back(Instruction(true, L"default"));
 			ustring line =
-				L"\"other gen test\"\n	required generators : \"another gen\"\n	t: \"table\"\n	g: \"gen\"\n \"default\"\n";
+				L"\"other gen test\"\n	required generators : \"another gen\"\n	{ t: \"table\"\n	g: \"gen\"\n \"default\"\n }";
 			testSet.push_back(TAR(line, g));
 		}
 
 		// required tables and gen
 		{
 			Generator g;
-			g.name = L"other gen test";
-			g.requiredGenerators = L"another gen";
-			g.requiredTables = L"a table";
+			g.name = L"othergentest";
+			g.requiredGenerators.push_back(L"another gen");
+			g.requiredTables.push_back(L"a table");
 			g.instructions.push_back(Instruction(false, L"table"));
 			g.instructions.push_back(Instruction(true, L"gen"));
 			g.instructions.push_back(Instruction(true, L"default"));
 			ustring line =
-				L"\"other gen test\"\n	required generators : \"another gen\"\n	required tables : \"a table\"\n	t: \"table\"\n	g: \"gen\"\n \"default\"\n";
+				L"\"other gen test\"\n	required generators : \"another gen\"\n	required tables : \"a table\"\n {	t: \"table\"\n	g: \"gen\"\n \"default\"\n }";
 			testSet.push_back(TAR(line, g));
 		}
 
 		// required tables, but no gen
 		{
 			Generator g;
-			g.name = L"other gen test";
-			g.requiredTables = L"a table";
+			g.name = L"othergentest";
+			g.requiredTables.push_back(L"a table");
 			g.instructions.push_back(Instruction(false, L"table"));
 			g.instructions.push_back(Instruction(true, L"gen"));
 			g.instructions.push_back(Instruction(true, L"default"));
 			ustring line =
-				L"\"other gen test\"\n	required tables : \"a table\"\n	t: \"table\"\n	g: \"gen\"\n \"default\"\n";
+				L"\"other gen test\"\n	required tables : \"a table\"\n	{ t: \"table\"\n	g: \"gen\"\n \"default\"\n }";
 			testSet.push_back(TAR(line, g));
 		}
 

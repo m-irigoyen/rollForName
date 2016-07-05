@@ -43,19 +43,33 @@ namespace rfn
 
 	bool Table::operator==(const Table & other)
 	{
-		// Checking entries
-		if (entries.size() != other.entries.size())
+		// Checking vector sizes
+		if ((entries.size() != other.entries.size())
+			|| (requiredTables.size() != other.requiredTables.size()))
 			return false;
 
+		// Name and roll
+		if ((name.compare(other.name) != 0)
+			|| (roll.compare(other.roll) !=0))
+		{
+			return false;
+		}
+
+		// entries
 		for (int i = 0; i < entries.size(); ++i)
 		{
 			if (entries.at(i) != other.entries.at(i))
 				return false;
 		}
-		// Comparing the rest
-		return (name == other.name)
-			&& (roll == other.roll)
-			&& (requiredTables == other.requiredTables);
+
+		// required tables
+		for (int i = 0; i < requiredTables.size(); ++i)
+		{
+			if (requiredTables.at(i).compare(other.requiredTables.at(i)) != 0)
+				return false;
+		}
+
+		return true;
 	}
 
 	bool Table::isValid()

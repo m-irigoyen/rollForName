@@ -1,2 +1,6 @@
 "testGenerator"
-REQUIRED TABLES : "testTables"
+REQUIRED TABLES : "testTable"
+{
+	t: "age"
+	t: "race"
+}

@@ -15,9 +15,12 @@ namespace rfn
 
 		RollForName();
 
-		bool loadTablesFromFile(std::string fileName, bool completePath = false);
-		bool loadGeneratorsFromFile(std::string fileName, bool completePath = false);
+		bool loadTablesFromFile(std::string fileName, bool isCompletePath = false);
+		bool loadGeneratorsFromFile(std::string fileName, bool isCompletePath = false);
+		bool loadTablesFromFile(ustring fileName, bool isCompletePath = false);
+		bool loadGeneratorsFromFile(ustring fileName, bool isCompletePath = false);
 		bool loadFromFile(std::string fileName);
+		bool loadFromFile(ustring fileName);
 
 		bool generate(ustring generatorName, ustring& result, bool isTopLevel = false);
 
@@ -29,9 +32,15 @@ namespace rfn
 
 		GeneratorMap generators_;
 		TableMap tables_;
+		std::vector<ustring> loadedTableFiles,
+			loadedGeneratorFiles;	// The name of every table/generator file that already loaded
 
 		// Open file
-		bool openFile(std::string fileName, std::wifstream& stream);
+		bool openFile(ustring fileName, std::wifstream& stream);
+
+		// Loading
+		bool loadTablesFromStream(std::wifstream& stream);
+		bool loadGeneratorsFromStream(std::wifstream& stream);
 
 		bool existsTable(ustring tableName);
 		bool existsTable(ustring tableName, Table& table);
