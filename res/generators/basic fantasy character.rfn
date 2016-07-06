@@ -1,0 +1,15 @@
+"basic fantasy character"
+REQUIRED TABLES : "basic fantasy character"
+{
+	t: "race"
+	t: "age"
+	g: "basic profession"
+}
+
+"basic profession"
+REQUIRED TABLES : "fantasy professions"
+{
+	t: "job"
+	t: "job expertise"
+	t: "worker status"
+}

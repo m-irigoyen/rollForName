@@ -218,7 +218,7 @@ namespace rfn
 		tableEntryParser() : tableEntryParser::base_type(start)
 		{
 			start %= (qi::lit("*") | qi::lit("-"))
-				>> range
+				>> (range | qi::attr(Range()))
 				>> quotedText
 				>> (
 					(qi::lit(":") >> quotedText)
@@ -382,15 +382,8 @@ namespace rfn
 			, boost::spirit::standard_wide::space
 			, t);
 
-		if (parseResult)
+		if (parseResult && t.isValid())
 		{
-			makeValidIdInPlace(t.name);
-			// Making valid ranges
-			for (TableEntry te : t.entries)
-			{
-				te.range.makeValid();
-			}
-
 			return true;
 		}
 		else
@@ -412,22 +405,12 @@ namespace rfn
 			, boost::spirit::standard_wide::space
 			, t);
 
-		if (parseResult)
+		if (parseResult && t.isValid())
 		{
-			makeValidIdInPlace(t.name);
-			// Making valid ranges
-			for (TableEntry te : t.entries)
-			{
-				te.range.makeValid();
-			}
-
 			return true;
 		}
 		else
 		{
-			Logger::errlogs(L"Failed to parse given iterators \n"
-				, ERRORTAG_PARSER_L
-				, L"parseTable");
 			return false;
 		}
 	}
@@ -520,10 +503,6 @@ namespace rfn
 			, boost::spirit::standard_wide::space
 			, result);
 
-		if (parseResult)
-		{
-			makeValidIdInPlace(result.name);
-		}
 		return parseResult;
 	}
 	bool rfn::Parser::parseGenerator(ustring::iterator& begin
@@ -536,16 +515,6 @@ namespace rfn
 			, boost::spirit::standard_wide::space
 			, result);
 
-		if (parseResult)
-		{
-			makeValidIdInPlace(result.name);
-		}
-		else
-		{
-			Logger::errlogs(L"Failed to parse given iterators \n"
-				, ERRORTAG_PARSER_L
-				, L"parseTable");
-		}
 		return parseResult;
 	}
 	bool rfn::Parser::parseGoto(const ustring & line, ustring & result)
@@ -559,10 +528,6 @@ namespace rfn
 			, boost::spirit::standard_wide::space
 			, result);
 
-		if (parseResult)
-		{
-			makeValidIdInPlace(result);
-		}
 		return parseResult;
 	}
 }

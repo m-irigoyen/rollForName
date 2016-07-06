@@ -1,4 +1,5 @@
 #include <rollForName/Table.h>
+#include <rollForName/StringHelpers.h>
 
 #include <algorithm>
 
@@ -10,6 +11,23 @@ namespace rfn
 	int rfn::Table::size()
 	{
 		return entries.size();
+	}
+
+	TableEntry Table::rollRandomEntry()
+	{
+		if (roll.empty())
+		{
+			return getRandomEntry();
+		}
+		else
+		{
+			// Roll
+			int rollResult;
+			if (rollDice(roll, rollResult))
+			{
+
+			}
+		}
 	}
 
 	TableEntry rfn::Table::getRandomEntry()
@@ -29,6 +47,18 @@ namespace rfn
 		{
 			return TableEntry();
 		}
+	}
+
+	TableEntry Table::getEntryAtRoll(int rollResult)
+	{
+		for (TableEntry te : entries)
+		{
+			if (te.range.isInRange(rollResult))
+			{
+				return te;
+			}
+		}
+		return TableEntry();
 	}
 
 	void Table::addEntry(TableEntry entry)
@@ -74,6 +104,18 @@ namespace rfn
 
 	bool Table::isValid()
 	{
+		// Making valid ranges
+		for (TableEntry te : entries)
+		{
+			te.range.makeValid();
+		}
+
+		// If there is no roll and at least one entry, its valid
+		if (roll.empty() && !entries.empty())
+		{
+			return true;
+		}
+
 		// Check there are no range intersections
 		for (int i = 0; i < entries.size(); ++i)
 		{
@@ -101,6 +143,5 @@ namespace rfn
 		}
 		std::sort(entries.begin(), entries.end());
 	}
-
 }
 

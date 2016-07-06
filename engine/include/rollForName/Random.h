@@ -29,9 +29,9 @@ namespace rfn
 	};
 
 	//! Returns true if the roll has been successfully made.
-	bool roll(const ustring& rollDesc, int& rollResult);
+	bool rollDice(const ustring& rollDesc, int& rollResult);
 
-	inline int roll(unsigned int nbDices, unsigned int nbFaces, std::vector<int> modifiers)
+	inline int rollrollDice(unsigned int nbDices, unsigned int nbFaces, std::vector<int> modifiers)
 	{
 		if ((nbDices == 0) || (nbFaces == 0))
 			return -1;
@@ -49,14 +49,14 @@ namespace rfn
 		return total;
 	}
 
-	inline int roll(unsigned int nbDices, unsigned int nbFaces)
+	inline int rollrollDice(unsigned int nbDices, unsigned int nbFaces)
 	{
-		return roll(nbDices, nbFaces, std::vector<int>());
+		return rollrollDice(nbDices, nbFaces, std::vector<int>());
 	}
 
-	inline int roll(Roll r)
+	inline int rollrollDice(Roll r)
 	{
-		return roll(r.nbDices, r.nbFaces, r.modifiers);
+		return rollrollDice(r.nbDices, r.nbFaces, r.modifiers);
 	}
 
 

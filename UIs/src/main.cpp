@@ -1,32 +1,26 @@
-#include <rollForName\rollForName.h>
+#include <rollForName\CommandLineHelper.h>
 #include <rollForName\Logger.h>
 
 using namespace rfn;
 
-int main()
+int main(int argc, char *argv[])
 {
+	// Parsing command line arguments
+
 	RollForName rfn;
-	/*if (rfn.loadTablesFromFile("testTable"))
+	std::string generatorName;
+	if (CommandLineHelper::parseAndApplyArguments(argc, argv, rfn, generatorName))
 	{
-		Logger::logs("Successfully loaded test tables");
-	}
-	else
-	{
-		Logger::logs("Failed to load test tables");
-	}*/
-	if (rfn.loadGeneratorsFromFile("testGenerator"))
-	{
-		Logger::logs("Successfully loaded test generator");
-	}
-	else
-	{
-		Logger::logs("Couldn't load test generator");
-	}
+		ustringVector result;
+		rfn.generate(generatorName, result, 0, true);
 
-	ustring result;
-	rfn.generate(L"testGenerator", result, true);
-
-	std::wcout << L"Result :\n" << result << std::endl;
+		std::wcout << std::endl << std::endl;
+		std::wcout << L"---------------------------" << std::endl;
+		for (ustring s : result)
+		{
+			std::wcout << s << std::endl;
+		}
+	}
 
 	return 0;
 }

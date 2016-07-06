@@ -71,14 +71,12 @@ static inline bool compare(ustring s1, ustring s2)
 static inline void makeValidIdInPlace(ustring& s)
 {
 	std::transform(s.begin(), s.end(), s.begin(), ::tolower);
-	removeSpaces(s);
 }
 
 static inline ustring makeValidId(const ustring& s)
 {
 	ustring copy = s;
 	std::transform(copy.begin(), copy.end(), copy.begin(), ::tolower);
-	removeSpaces(copy);
 	return copy;
 }
 
@@ -87,6 +85,16 @@ static inline ustring stringToUstring(const std::string& s)
 	ustring result;
 	result.assign(s.begin(), s.end());
 	return result;
+}
+
+static inline ustring tabFromLevel(const int level)
+{
+	ustring tab;
+	for (int i = 0; i < level; ++i)
+	{
+		tab += L"\t";
+	}
+	return tab;
 }
 
 

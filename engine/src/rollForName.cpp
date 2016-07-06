@@ -61,6 +61,7 @@ namespace rfn
 	bool RollForName::loadGeneratorsFromFile(ustring fileName, bool isCompletePath)
 	{
 		ustring completePath;
+
 		if (!isCompletePath)
 		{
 			completePath = makePathGenerator(fileName);
@@ -115,38 +116,50 @@ namespace rfn
 		}
 	}
 
-	bool RollForName::generate(ustring generatorName, ustring& result, bool isTopLevel)
+	bool RollForName::generate(ustring generatorName, ustringVector& result, int level, bool isTopLevel)
 	{
 		Generator g;
 		if (existsGenerator(generatorName, g))
 		{
+			ustring tab = tabFromLevel(level);
+			result.push_back(tab + g.name);
+
 			for (Instruction i : g.instructions)
 			{
-				executeInstruction(i, result);
+				executeInstruction(i, level+1, result);
 			}
 		}
 		return false;
 	}
 
-	bool RollForName::drawFromTable(ustring tableName, ustring & result)
+	bool RollForName::generate(std::string generatorName, ustringVector & result, int level, bool isTopLevel)
+	{
+		return generate(stringToUstring(generatorName)
+			, result
+			, level
+			, isTopLevel);
+	}
+
+	bool RollForName::drawFromTable(ustring tableName, ustringVector & result, int level)
 	{
 		Table t;
 		if (existsTable(tableName, t))
 		{
-			TableEntry te = t.getRandomEntry();
+			ustring tab = tabFromLevel(level);
+			TableEntry te = t.rollRandomEntry();
 
 			// Goto
 			ustring gotoName;
 			ustring gotoResult;
-			if (Parser::parseGoto(te.description, gotoName)
-				&& drawFromTable(gotoName, gotoResult))
+			if (Parser::parseGoto(te.description, gotoName))
 			{
-				result += te.name + L" : " + gotoName + L" : " + gotoResult;
+				result.push_back(tab + te.name + L" : ");
+				drawFromTable(gotoName, result, level + 1);
 				return true;
 			}
 			else
 			{
-				result += te.name + L" : " + te.description;
+				result.push_back(tab + te.name + L" : " + te.description);
 				return true;
 			}
 		}
@@ -201,12 +214,14 @@ namespace rfn
 				, completeFile.end()
 				, t))
 			{
+				ustring tId = makeValidId(t.name);
+
 				if (!t.isValid())
 				{
 					Logger::errlogs(L"Parsed invalid table");
 					return false;
 				}
-				else if (existsTable(t.name))
+				else if (existsTable(tId))
 				{
 					Logger::errlogs(L"A table with identical name already exists");
 					return false;
@@ -214,7 +229,7 @@ namespace rfn
 				else
 				{
 					// Adding the table
-					tables_.insert(make_pair(t.name, t));
+					tables_.insert(make_pair(tId, t));
 				}
 			}
 			else
@@ -265,12 +280,13 @@ namespace rfn
 				, completeFile.end()
 				, g))
 			{
+				ustring gId = makeValidId(g.name);
 				if (!g.isValid())
 				{
 					Logger::errlogs(L"Parsed invalid generator");
 					return false;
 				}
-				else if (existsGenerator(g.name))
+				else if (existsGenerator(gId))
 				{
 					Logger::errlogs(L"A generator with identical name already exists");
 					return false;
@@ -278,7 +294,7 @@ namespace rfn
 				else
 				{
 					// Adding the table
-					generators_.insert(make_pair(g.name, g));
+					generators_.insert(make_pair(gId, g));
 
 					// Loading additionnal generators / tables
 					for (ustring s : g.requiredTables)
@@ -353,17 +369,17 @@ namespace rfn
 			return false;
 		}
 	}
-	bool RollForName::executeInstruction(Instruction i, ustring & result)
+	bool RollForName::executeInstruction(Instruction i, int level, ustringVector & result)
 	{
 		Generator g;
 		Table t;
 		if (i.generator)
 		{
-			return generate(i.name, result);
+			return generate(i.name, result, level);
 		}
 		else
 		{
-			return drawFromTable(i.name, result);
+			return drawFromTable(i.name, result, level);
 		}
 	}
 }

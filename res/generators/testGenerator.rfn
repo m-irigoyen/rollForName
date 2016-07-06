@@ -1,6 +1,0 @@
-"testGenerator"
-REQUIRED TABLES : "testTable"
-{
-	t: "age"
-	t: "race"
-}

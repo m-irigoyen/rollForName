@@ -22,9 +22,10 @@ namespace rfn
 		bool loadFromFile(std::string fileName);
 		bool loadFromFile(ustring fileName);
 
-		bool generate(ustring generatorName, ustring& result, bool isTopLevel = false);
+		bool generate(ustring generatorName, ustringVector& result, int level = 0, bool isTopLevel = false);
+		bool generate(std::string generatorName, ustringVector& result, int level = 0, bool isTopLevel = false);
 
-		bool drawFromTable(ustring tableName, ustring& result);
+		bool drawFromTable(ustring tableName, ustringVector& result, int level);
 
 	private:
 		typedef std::map<ustring, Generator> GeneratorMap;
@@ -46,6 +47,6 @@ namespace rfn
 		bool existsTable(ustring tableName, Table& table);
 		bool existsGenerator(ustring tableName);
 		bool existsGenerator(ustring tableName, Generator& generator);
-		bool executeInstruction(Instruction i, ustring& result);
+		bool executeInstruction(Instruction i, int level, ustringVector& result);
 	};
 }

@@ -1,0 +1,24 @@
+"job"
+{
+	- "Soldier" : "You kill stuff for a living."
+	- "Medic"	: "You heal people who kill stuff for a living."
+	- "Merchant"	: "You sell stuff for a living."
+	- "Lord"	: "You rule over other people because you were born luckier than they were for a living."
+}
+
+"job expertise"
+{
+	- "Complete newb" : "Either you never heard of that job until a few minutes ago, either you must be dangerously incompetent."
+	- "Neophyte"	: "Everybody has to start someday, right?"
+	- "Adept"	: "You know the basics of the craft."
+	- "Experienced" : "You've been at it for a while now, and you're getting quited good at it."
+	- "Veteran"	:	"You've seen it all, done it all. Experienced practitionners look to you for advice."
+	- "Master"	:	"Through sweat, hardwork, and perhaps excentricity, you do what no one has done before."
+}
+
+"worker status"
+{
+	- "Independent" : "You work for yourself. Tiring and dangerous position, but very rewarding."
+	- "Employed"	: 	"You answer to your boss, and he pays you in exchange for your work."
+	- "Exploited"	:	"Wether it is slavery or liberalist capitalism, you don't get anything from your work."
+}

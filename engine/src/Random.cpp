@@ -6,7 +6,7 @@
 
 namespace rfn
 {
-	bool roll(const ustring& line, int& rollResult)
+	bool rollDice(const ustring& line, int& rollResult)
 	{
 		std::vector<Roll> r;
 		rollResult = 0;
@@ -18,7 +18,7 @@ namespace rfn
 		{
 			for (Roll oneRoll : r)
 			{
-				rollResult += roll(oneRoll);
+				rollResult += rollrollDice(oneRoll);
 			}
 			return true;
 		}

@@ -5,6 +5,7 @@
 #include <rollForName/GameDictionary.h>
 #include <rollForName/Parser.h>
 #include <rollForName/Generator.h>
+#include <rollForName/CommandLineHelper.h>
 
 #include <iostream>
 
@@ -75,7 +76,7 @@ namespace rfn
 				int t;
 				for (int i = 0; i < ROLL_NB; ++i)
 				{
-					if (roll(test, t))
+					if (rollDice(test, t))
 					{
 						if (t > result.max)
 							result.max = t;
@@ -518,7 +519,7 @@ namespace rfn
 		// Simple table
 		{
 			Table t;
-			t.name = L"firsttest";
+			t.name = L"FirstTest";
 			t.roll = L"[1d6]";
 			t.entries.push_back(TableEntry(Range(1, 3), L"entry1", L"This is the first entry"));
 			t.entries.push_back(TableEntry(Range(4, 6), L"entry2", L"This is the second entry"));
@@ -531,7 +532,7 @@ namespace rfn
 		// Same with stuff before the name
 		{
 			Table t;
-			t.name = L"firsttest";
+			t.name = L"FirstTest";
 			t.roll = L"[1d6]";
 			t.entries.push_back(TableEntry(Range(1, 3), L"entry1", L"This is the first entry"));
 			t.entries.push_back(TableEntry(Range(4, 6), L"entry2", L"This is the second entry"));
@@ -544,7 +545,7 @@ namespace rfn
 		// More complex table
 		{
 			Table t;
-			t.name = L"anothertest";
+			t.name = L"Another Test";
 			t.roll = L"[2d4+1]";
 			t.requiredTables.push_back(L"races");
 			t.entries.push_back(TableEntry(Range(2, 3), L"entry1", L"This is a $key"));
@@ -553,6 +554,20 @@ namespace rfn
 
 			ustring line =
 				L"\"Another Test\"\n	REQUIRED \"races\"\n	[2d4+1]\n	{\n	* <2_3> \"entry1\" : \"This is a $key\"\n		* <4_6> \"entry2\" : \"This contains a roll [1d20]\"\n	* <7_9> \"a simple goto\" : \"-> races\"\n }\n";
+			testSet.push_back(TAR(line, t));
+		}
+
+		// No roll / range
+		{
+			Table t;
+			t.name = L"No Roll test";
+			t.requiredTables.push_back(L"races");
+			t.entries.push_back(TableEntry(Range(), L"entry1", L"This is a $key"));
+			t.entries.push_back(TableEntry(Range(), L"entry2", L"This contains a roll [1d20]"));
+			t.entries.push_back(TableEntry(Range(), L"a simple goto", L"-> races"));
+
+			ustring line =
+				L"\"No Roll test\"\n	REQUIRED \"races\"\n	{\n	* \"entry1\" : \"This is a $key\"\n		* \"entry2\" : \"This contains a roll [1d20]\"\n	* \"a simple goto\" : \"-> races\"\n }\n";
 			testSet.push_back(TAR(line, t));
 		}
 
@@ -674,7 +689,7 @@ namespace rfn
 		// Base generator
 		{
 			Generator g;
-			g.name = L"gentest";
+			g.name = L"Gen Test";
 			g.instructions.push_back(Instruction(false, L"table"));
 			g.instructions.push_back(Instruction(true, L"gen"));
 			g.instructions.push_back(Instruction(true, L"default"));
@@ -686,7 +701,7 @@ namespace rfn
 		// required gen
 		{
 			Generator g;
-			g.name = L"othergentest";
+			g.name = L"other gen test";
 			g.requiredGenerators.push_back(L"another gen");
 			g.instructions.push_back(Instruction(false, L"table"));
 			g.instructions.push_back(Instruction(true, L"gen"));
@@ -699,7 +714,7 @@ namespace rfn
 		// required tables and gen
 		{
 			Generator g;
-			g.name = L"othergentest";
+			g.name = L"other gen test";
 			g.requiredGenerators.push_back(L"another gen");
 			g.requiredTables.push_back(L"a table");
 			g.instructions.push_back(Instruction(false, L"table"));
@@ -713,7 +728,7 @@ namespace rfn
 		// required tables, but no gen
 		{
 			Generator g;
-			g.name = L"othergentest";
+			g.name = L"other gen test";
 			g.requiredTables.push_back(L"a table");
 			g.instructions.push_back(Instruction(false, L"table"));
 			g.instructions.push_back(Instruction(true, L"gen"));
@@ -744,7 +759,6 @@ namespace rfn
 			, ERRORTAG_TEST);
 		return result;
 	}
-
 }
 
 
