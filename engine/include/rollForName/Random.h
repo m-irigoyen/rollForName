@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rollForName/typedefs.h>
+#include <rollForName\GameDictionary.h>
 
 #include <random>
 #include <vector>
@@ -18,7 +19,6 @@ namespace rfn
 	}
 
 	// DICE ROLLS
-
 	struct Roll
 	{
 		Roll::Roll() : nbFaces(0), nbDices(0) {}
@@ -26,12 +26,54 @@ namespace rfn
 		unsigned int nbDices;
 		unsigned int nbFaces;
 		std::vector<int> modifiers;
+
+		bool operator==(const Roll& other)
+		{
+			if (modifiers.size() != other.modifiers.size())
+			{
+				return false;
+			}
+			for (int i = 0; i < modifiers.size(); ++i)
+			{
+				if (modifiers[i] != other.modifiers[i])
+					return false;
+			}
+			return (
+				(nbDices == other.nbDices)
+				&& (nbFaces == other.nbFaces)
+				);
+		}
+		bool operator!=(const Roll& other)
+		{
+			return !(*this == other);
+		}
+	};
+
+	struct RollAndMod
+	{
+		std::vector<Roll> rolls;
+		ustring mod;
+
+		bool operator == (const RollAndMod& other)
+		{
+			if (rolls.size() != other.rolls.size())
+			{
+				return false;
+			}
+			for (int i = 0; i < rolls.size(); ++i)
+			{
+				if (rolls[i] != other.rolls[i])
+					return false;
+			}
+
+			return mod.compare(other.mod) == 0;
+		}
 	};
 
 	//! Returns true if the roll has been successfully made.
-	bool rollDice(const ustring& rollDesc, int& rollResult);
+	bool rollDice(const ustring& rollDesc, int& rollResult, const GameDictionary* dictionary = NULL);
 
-	inline int rollrollDice(unsigned int nbDices, unsigned int nbFaces, std::vector<int> modifiers)
+	inline int rollDice(unsigned int nbDices, unsigned int nbFaces, std::vector<int> modifiers)
 	{
 		if ((nbDices == 0) || (nbFaces == 0))
 			return -1;
@@ -49,15 +91,13 @@ namespace rfn
 		return total;
 	}
 
-	inline int rollrollDice(unsigned int nbDices, unsigned int nbFaces)
+	inline int rollDice(unsigned int nbDices, unsigned int nbFaces)
 	{
-		return rollrollDice(nbDices, nbFaces, std::vector<int>());
+		return rollDice(nbDices, nbFaces, std::vector<int>());
 	}
 
-	inline int rollrollDice(Roll r)
+	inline int rollDice(Roll r)
 	{
-		return rollrollDice(r.nbDices, r.nbFaces, r.modifiers);
+		return rollDice(r.nbDices, r.nbFaces, r.modifiers);
 	}
-
-
 }

@@ -6,9 +6,9 @@
 
 namespace rfn
 {
-	bool rollDice(const ustring& line, int& rollResult)
+	bool rollDice(const ustring& line, int& rollResult, const GameDictionary* dictionary)
 	{
-		std::vector<Roll> r;
+		RollAndMod r;
 		rollResult = 0;
 
 		ustring lineCopy = line;
@@ -16,9 +16,16 @@ namespace rfn
 
 		if (Parser::parseRoll(lineCopy, r))
 		{
-			for (Roll oneRoll : r)
+			for (Roll oneRoll : r.rolls)
 			{
-				rollResult += rollrollDice(oneRoll);
+				rollResult += rollDice(oneRoll);
+			}
+
+			if ((!r.mod.empty())
+				&& (dictionary != NULL)
+				&& (dictionary->exists(r.mod)))
+			{
+				rollResult += dictionary->get(r.mod);
 			}
 			return true;
 		}

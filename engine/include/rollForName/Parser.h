@@ -40,7 +40,7 @@ namespace rfn
 		static bool parseRange(const ustring& line, Range& result);
 
 		//! If the parse was successful, returns true
-		static bool parseRoll(const ustring& line, std::vector<Roll>& result);
+		static bool parseRoll(const ustring& line, RollAndMod& result);
 
 		//! If the parse was successful, returns true
 		static bool parseGeneratorInstruction(const ustring& line, Instruction& i);
@@ -52,7 +52,13 @@ namespace rfn
 		//! If the parse was successful, returns true
 		static bool parseGoto(const ustring& line, ustring& gotoName);
 
+		static bool parseAction(const ustring& line, Action& action);
+
+		static bool parseLoneVariable(ustring::iterator begin, const ustring::iterator end, ustring& variable);
+
+
 		static bool parseNameFromFilepath(const std::string& line, std::string& result);
 		static bool parseNameFromFilepath(const ustring& line, ustring& result);
+		static bool parseLoneVariable(const ustring& line, ustring& result);
 	};
 }

@@ -8,6 +8,8 @@
 #include <locale>
 #include <codecvt>
 
+#include <boost/algorithm/string/replace.hpp>
+
 #define ERRORTAG_ROLLFORNAME_L L"rollForName"
 #define ERRORTAG_ROLLFORNAME "rollForName"
 
@@ -41,8 +43,8 @@ namespace rfn
 		}
 
 		// That file already was loaded.
-		if (std::find(loadedTableFiles.begin(), loadedTableFiles.end(), fileName)
-			!= loadedTableFiles.end())
+		if (std::find(loadedTableFiles_.begin(), loadedTableFiles_.end(), fileName)
+			!= loadedTableFiles_.end())
 		{
 			return true;
 		}
@@ -50,7 +52,7 @@ namespace rfn
 		std::wifstream stream;
 		if (openFile(completePath, stream))
 		{
-			loadedTableFiles.push_back(fileName);
+			loadedTableFiles_.push_back(fileName);
 
 			return loadTablesFromStream(stream);
 		}
@@ -73,8 +75,8 @@ namespace rfn
 		}
 
 		// That file already was loaded.
-		if (std::find(loadedGeneratorFiles.begin(), loadedGeneratorFiles.end(), fileName)
-			!= loadedGeneratorFiles.end())
+		if (std::find(loadedGeneratorFiles_.begin(), loadedGeneratorFiles_.end(), fileName)
+			!= loadedGeneratorFiles_.end())
 		{
 			return true;
 		}
@@ -82,7 +84,7 @@ namespace rfn
 		std::wifstream stream;
 		if (openFile(completePath, stream))
 		{
-			loadedGeneratorFiles.push_back(fileName);
+			loadedGeneratorFiles_.push_back(fileName);
 
 			return loadGeneratorsFromStream(stream);
 		}
@@ -146,19 +148,58 @@ namespace rfn
 		if (existsTable(tableName, t))
 		{
 			ustring tab = tabFromLevel(level);
-			TableEntry te = t.rollRandomEntry();
+			TableEntry te;
+			// Rolling and drawing an entry
+			if (t.roll.empty())
+			{
+				te = t.getRandomEntry();
+			}
+			else
+			{
+				int diceResult;
+				if (rollDice(t.roll, diceResult))
+				{
+					te = t.getEntryAt(diceResult);
+				}
+				else
+				{
+					te = t.getRandomEntry();
+				}
+			}
 
 			// Goto
 			ustring gotoName;
-			ustring gotoResult;
+			ustring parseResult;
+			Action a;
 			if (Parser::parseGoto(te.description, gotoName))
 			{
 				result.push_back(tab + te.name + L" : ");
 				drawFromTable(gotoName, result, level + 1);
 				return true;
 			}
+			else if (Parser::parseAction(te.description, a))
+			{
+				dictionary_.set(a.variableName, a.value);
+			}
 			else
 			{
+				// Resolve variables
+				ustring variable;
+				ustring::iterator it = te.description.begin();
+				while (Parser::parseLoneVariable(it
+					, te.description.end()
+					, variable))
+				{
+					if (dictionary_.exists(variable))
+					{
+						ustring fullVariable = L"($" + variable + L")";
+						boost::replace_all(te.description
+							, fullVariable
+							, std::to_wstring(dictionary_.get(fullVariable)));
+						it = te.description.begin();
+					}
+				}
+
 				result.push_back(tab + te.name + L" : " + te.description);
 				return true;
 			}

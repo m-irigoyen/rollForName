@@ -9,8 +9,8 @@
 
 #include <iostream>
 
-#define ROLL_NB 10000	// nb of rolls done for each roll test
-//#define ROLL_NB 1	// nb of rolls done for each roll test
+//#define ROLL_NB 10000	// nb of rolls done for each roll test
+#define ROLL_NB 1	// nb of rolls done for each roll test
 #define ERRORTAG_TEST "Tests"
 #define ERRORTAG_TEST_L L"Tests"
 
@@ -68,30 +68,30 @@ namespace rfn
 
 	struct FunctorRollTest
 	{
-			bool operator()(ustring test, Range expected, void*, Range& result)
+		bool operator()(ustring test, Range expected, void* dictionary, Range& result)
+		{
+			result.min = ROLL_NB;
+			result.max = -ROLL_NB;
+
+			int t;
+			for (int i = 0; i < ROLL_NB; ++i)
 			{
-				result.min = ROLL_NB;
-				result.max = -ROLL_NB;
-
-				int t;
-				for (int i = 0; i < ROLL_NB; ++i)
+				if (rollDice(test, t, (GameDictionary*)dictionary))
 				{
-					if (rollDice(test, t))
-					{
-						if (t > result.max)
-							result.max = t;
-						if (t < result.min)
-							result.min = t;
-					}
-					else
-					{
-						Logger::errlogs(L"Couldn't parse given roll :\n" + test);
-						return false;
-					}
+					if (t > result.max)
+						result.max = t;
+					if (t < result.min)
+						result.min = t;
 				}
-
-				return expected == result;
+				else
+				{
+					Logger::errlogs(L"Couldn't parse given roll :\n" + test);
+					return false;
+				}
 			}
+
+			return expected == result;
+		}
 	};
 
 
@@ -102,6 +102,20 @@ namespace rfn
 			if (!Parser::parseNameFromFilepath(test, result))
 			{
 				Logger::errlogs(L"Couldn't parse given filepath :\n" + test);
+				return false;
+			}
+
+			return expected.compare(result) == 0;
+		}
+	};
+
+	struct FunctorLoneVariableTest
+	{
+		bool operator()(ustring test, ustring expected, void*, ustring& result)
+		{
+			if (!Parser::parseLoneVariable(test, result))
+			{
+				Logger::errlogs(L"Couldn't find a variable in :\n" + test);
 				return false;
 			}
 
@@ -210,6 +224,7 @@ namespace rfn
 		results.push_back(testInstructionParse(displayFailed));
 		results.push_back(testGeneratorParse(displayFailed));
 		results.push_back(testExtractNameFromPath(displayFailed));
+		results.push_back(testLoneVariableFind(displayFailed));
 		results.push_back(testRoll(displayFailed));
 
 		for (float f : results)
@@ -284,11 +299,10 @@ namespace rfn
 		RList failedResults;
 
 		GameDictionary dictionary;
-		dictionary.set(L"key", L"testValue");
-		dictionary.set(L"key2", L"testValue2");
-		dictionary.set(L"Digit", L"0");
-		dictionary.set(L"Number", L"481516");
-		dictionary.set(L"Pi", L"3.1415");
+		dictionary.set(L"key", 1);
+		dictionary.set(L"key2", 2);
+		dictionary.set(L"Digit", 3);
+		dictionary.set(L"Number", -4);
 
 		// Basic rolls
 		{
@@ -312,8 +326,18 @@ namespace rfn
 			testSet.push_back(TAR(L"[1d1 + 1d2+ 1d3 + 1d4 +1d5]", Range(5, 15)));
 		}
 
+		// Modifiers
+		{
+			testSet.push_back(TAR(L"[1d6]+($key)", Range(2, 7)));
+			testSet.push_back(TAR(L"[1d6]+($Number)", Range(-3, 2)));
+		}
+
 		Tester<Range> t;
-		float result = t.test(testSet, failedSet, failedResults, FunctorRollTest());
+		float result = t.test(testSet
+			, failedSet
+			, failedResults
+			, FunctorRollTest()
+			, (void*)&dictionary);
 
 		if (displayFailed)
 		{
@@ -345,13 +369,6 @@ namespace rfn
 		TARList testSet;
 		TARList failedSet;
 		RList failedResults;
-
-		GameDictionary dictionary;
-		dictionary.set(L"key", L"testValue");
-		dictionary.set(L"key2", L"testValue2");
-		dictionary.set(L"Digit", L"0");
-		dictionary.set(L"Number", L"481516");
-		dictionary.set(L"Pi", L"3.1415");
 
 		// Basic ranges
 		{
@@ -423,11 +440,10 @@ namespace rfn
 		RList failedResults;
 
 		GameDictionary dictionary;
-		dictionary.set(L"key", L"testValue");
-		dictionary.set(L"key2", L"testValue2");
-		dictionary.set(L"Digit", L"0");
-		dictionary.set(L"Number", L"481516");
-		dictionary.set(L"Pi", L"3.1415");
+		dictionary.set(L"key", 1);
+		dictionary.set(L"key2", 2);
+		dictionary.set(L"Digit", 3);
+		dictionary.set(L"Number", -4);
 
 		// Simple entry
 		{
@@ -510,11 +526,10 @@ namespace rfn
 		RList failedResults;
 
 		GameDictionary dictionary;
-		dictionary.set(L"key", L"testValue");
-		dictionary.set(L"key2", L"testValue2");
-		dictionary.set(L"Digit", L"0");
-		dictionary.set(L"Number", L"481516");
-		dictionary.set(L"Pi", L"3.1415");
+		dictionary.set(L"key", 1);
+		dictionary.set(L"key2", 2);
+		dictionary.set(L"Digit", 3);
+		dictionary.set(L"Number", -4);
 
 		// Simple table
 		{
@@ -603,13 +618,6 @@ namespace rfn
 		TARList failedSet;
 		RList failedResults;
 
-		GameDictionary dictionary;
-		dictionary.set(L"key", L"testValue");
-		dictionary.set(L"key2", L"testValue2");
-		dictionary.set(L"Digit", L"0");
-		dictionary.set(L"Number", L"481516");
-		dictionary.set(L"Pi", L"3.1415");
-
 		// Simple instruction
 		{
 			Instruction i;
@@ -680,11 +688,10 @@ namespace rfn
 		RList failedResults;
 
 		GameDictionary dictionary;
-		dictionary.set(L"key", L"testValue");
-		dictionary.set(L"key2", L"testValue2");
-		dictionary.set(L"Digit", L"0");
-		dictionary.set(L"Number", L"481516");
-		dictionary.set(L"Pi", L"3.1415");
+		dictionary.set(L"key", 1);
+		dictionary.set(L"key2", 2);
+		dictionary.set(L"Digit", 3);
+		dictionary.set(L"Number", -4);
 
 		// Base generator
 		{
@@ -756,6 +763,53 @@ namespace rfn
 		}
 
 		Logger::logs("testGeneratorParse results : " + std::to_string(result) + " %"
+			, ERRORTAG_TEST);
+		return result;
+	}
+
+	float Test::testLoneVariableFind(bool displayFailed)
+	{
+		typedef std::pair<ustring, ustring> TAR;
+		typedef std::vector<TAR> TARList;
+		typedef std::vector<ustring> RList;
+
+		TARList testSet;
+		TARList failedSet;
+		RList failedResults;
+
+		GameDictionary dictionary;
+		dictionary.set(L"key", 1);
+		dictionary.set(L"key2", 2);
+		dictionary.set(L"Digit", 3);
+		dictionary.set(L"Number", -4);
+
+		// Simple
+		{
+			testSet.push_back(TAR(L"Simple ($key) ", L"key"));
+			testSet.push_back(TAR(L"This($key)is harder", L"key"));
+			testSet.push_back(TAR(L"This($Number)is harder", L"Number"));
+		}
+
+		Tester<ustring> t;
+		float result = t.test(testSet, failedSet, failedResults, FunctorLoneVariableTest());
+
+		if (displayFailed)
+		{
+			if (!failedSet.empty())
+			{
+				for (int i = 0; i < failedSet.size(); ++i)
+				{
+					Logger::logs(L"\n----Test     : "
+						+ failedSet[i].first + L"\n"
+						+ L"----Expected : " + (failedSet[i].second) + L"\n"
+						+ L"----Got      : " + failedResults[i]
+						, ERRORTAG_TEST_L
+						, L"testLoneVariableFind");
+				}
+			}
+		}
+
+		Logger::logs("Test lone variable find results : " + std::to_string(result) + " %"
 			, ERRORTAG_TEST);
 		return result;
 	}

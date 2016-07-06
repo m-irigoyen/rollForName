@@ -94,6 +94,28 @@ namespace rfn
 		}
 	};
 
+	struct Action
+	{
+		ustring variableName;
+		int value;
+
+		bool operator==(const Action& other)
+		{
+			return ((value == other.value)
+				&& (variableName.compare(other.variableName) == 0));
+		}
+
+		bool operator!=(const Action& other)
+		{
+			return !(*this == other);
+		}
+
+		bool isValid()
+		{
+			return !variableName.empty();
+		}
+	};
+
 	struct TableEntry
 	{
 		TableEntry() {};

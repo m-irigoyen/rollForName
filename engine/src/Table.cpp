@@ -13,43 +13,12 @@ namespace rfn
 		return entries.size();
 	}
 
-	TableEntry Table::rollRandomEntry()
-	{
-		if (roll.empty())
-		{
-			return getRandomEntry();
-		}
-		else
-		{
-			// Roll
-			int rollResult;
-			if (rollDice(roll, rollResult))
-			{
-
-			}
-		}
-	}
-
 	TableEntry rfn::Table::getRandomEntry()
 	{
 		return entries.at(randomIntInclusive(0, entries.size() - 1));
 	}
 
-	TableEntry Table::getEntryAt(int x)
-	{
-		if ((entries.size() > 0)
-			&& (x >= 0)
-			&& (x < entries.size()))
-		{
-			return entries.at(x);
-		}
-		else
-		{
-			return TableEntry();
-		}
-	}
-
-	TableEntry Table::getEntryAtRoll(int rollResult)
+	TableEntry Table::getEntryAt(int rollResult)
 	{
 		for (TableEntry te : entries)
 		{
@@ -80,7 +49,7 @@ namespace rfn
 
 		// Name and roll
 		if ((name.compare(other.name) != 0)
-			|| (roll.compare(other.roll) !=0))
+			|| (roll == other.roll))
 		{
 			return false;
 		}

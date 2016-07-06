@@ -16,21 +16,21 @@ namespace rfn
 		return dictionary_.find(key) != dictionary_.end();
 	}
 
-	ustring GameDictionary::get(ustring key)
+	int GameDictionary::get(ustring key) const
 	{
 		makeValidIdInPlace(key);
-		Dictionary::iterator it = dictionary_.find(key);
+		Dictionary::const_iterator it = dictionary_.find(key);
 		if (it != dictionary_.end())
 		{
 			return it->second;
 		}
 		else
 		{
-			return ustring();
+			return 0;
 		}
 	}
 
-	void GameDictionary::set(ustring key, ustring value)
+	void GameDictionary::set(ustring key, int value)
 	{
 		makeValidIdInPlace(key);
 		Dictionary::iterator it = dictionary_.find(key);

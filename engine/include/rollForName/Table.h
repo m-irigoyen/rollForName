@@ -15,10 +15,9 @@ namespace rfn
 		//! Returns the number of elements
 		int size();
 
-		TableEntry rollRandomEntry();
 		TableEntry getRandomEntry();
-		TableEntry getEntryAt(int x);
-		TableEntry getEntryAtRoll(int rollResult);
+		TableEntry getEntryAt(int rollResult);
+
 		void addEntry(TableEntry entry);
 
 		void clear();

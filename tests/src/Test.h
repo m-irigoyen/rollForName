@@ -16,5 +16,6 @@ namespace rfn
 		static float testTableParse(bool displayFailed = false);
 		static float testInstructionParse(bool displayFailed = false);
 		static float testGeneratorParse(bool displayFailed = false);
+		static float testLoneVariableFind(bool displayFailed = false);
 	};
 }

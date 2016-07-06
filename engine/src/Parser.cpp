@@ -40,6 +40,13 @@ BOOST_FUSION_ADAPT_STRUCT(
 	(std::vector<int>, modifiers)
 )
 
+// RollAndMod
+BOOST_FUSION_ADAPT_STRUCT(
+	rfn::RollAndMod,
+	(std::vector<rfn::Roll>, rolls)
+	(rfn::ustring, mod)
+)
+
 // Table
 BOOST_FUSION_ADAPT_STRUCT(
 	rfn::Table,
@@ -54,6 +61,13 @@ BOOST_FUSION_ADAPT_STRUCT(
 	rfn::Instruction,
 	(bool, generator)
 	(rfn::ustring, name)
+)
+
+//Action
+BOOST_FUSION_ADAPT_STRUCT(
+	rfn::Action,
+	(rfn::ustring, variableName)
+	(int, value)
 )
 
 // Generator
@@ -194,6 +208,8 @@ namespace rfn
 		qi::rule<Iterator, std::vector<Roll>(), Skipper> start;
 	};
 
+
+
 	// Parser that reads a dice roll, and returns it in ustring form
 	template <typename Iterator, typename Skipper = boost::spirit::standard_wide::space_type>
 	struct rollStringParser : public qi::grammar<Iterator, ustring(), Skipper>
@@ -204,8 +220,13 @@ namespace rfn
 			start %= qi::no_case[
 				qi::char_("[")
 				>> *(qi::char_ - "]")
-				>> qi::char_("]")
-			];
+				>> qi::char_("]")]
+				>> qi::char_("+")
+				>> -(qi::lexeme[
+					qi::string("($")
+					>> (*qi::char_ - (')'))
+					>> qi::char_(")")
+					]);
 		}
 		qi::rule<Iterator, ustring(), Skipper> start;
 	};
@@ -317,8 +338,79 @@ namespace rfn
 		qi::rule<Iterator, ustring(), Skipper> start;
 	};
 
+	// Parser that reads an action and returns it
+	template <typename Iterator, typename Skipper = boost::spirit::standard_wide::space_type>
+	struct actionParser : public qi::grammar<Iterator, Action(), Skipper>
+	{
+	public:
+		actionParser() : actionParser::base_type(start)
+		{
+			start %= qi::lit("(")
+				>> qi::lexeme[qi::lit("$")
+				>> *(qi::char_ - '=')]
+				>> qi::lit("=")
+				>> qi::int_
+				>> qi::lit(")");
+		}
 
+		qi::rule<Iterator, Action(), Skipper> start;
+	};
+
+	// Parser that reads a lone variable and returns it
+	template <typename Iterator, typename Skipper = boost::spirit::standard_wide::space_type>
+	struct loneVariableParser : public qi::grammar<Iterator, ustring(), Skipper>
+	{
+	public:
+		loneVariableParser() : loneVariableParser::base_type(start)
+		{
+			ignore = *(qi::char_ - '(');
+
+			start %= ignore
+				>> qi::lexeme[qi::lit("(")
+				>> qi::lit("$")
+				>> *(qi::char_ - ')')
+				>> qi::lit(")")
+				];
+		}
+
+		qi::rule<Iterator, Skipper> ignore;
+		qi::rule<Iterator, ustring(), Skipper> start;
+	};
+
+	// Parser that reads a dice roll + modifier
+	template <typename Iterator, typename Skipper = boost::spirit::standard_wide::space_type>
+	struct rollAndModParser : public qi::grammar<Iterator, RollAndMod(), Skipper>
+	{
+	public:
+		rollAndModParser() : rollAndModParser::base_type(start)
+		{
+			roll %= qi::int_
+				>> qi::no_case[qi::lit("d")]
+				>> qi::int_
+				>> *(qi::int_
+					>> (&qi::lit("+") | &qi::lit("-") | &qi::lit("]")));
+
+			start %= qi::lit("[")
+				>> *roll
+				>> qi::lit("]")
+				>>
+				(
+				(qi::lit("+") >> loneVariable)
+				| qi::attr("")
+					);
+		}
+
+		loneVariableParser<Iterator, Skipper> loneVariable;
+
+		qi::rule<Iterator, Roll, Skipper> roll;
+		qi::rule<Iterator, RollAndMod(), Skipper> start;
+	};
+
+
+
+		//----------
 		// FUNCTIONS
+		//----------
 
 	bool rfn::Parser::findNextBracketEnd(ustring::iterator& begin, ustring::iterator end, ustring& skipped)
 	{
@@ -436,11 +528,11 @@ namespace rfn
 			return false;
 		}
 	}
-	bool Parser::parseRoll(const ustring & line, std::vector<Roll> & result)
+	bool Parser::parseRoll(const ustring & line, RollAndMod & result)
 	{
 		ustring lineCopy = line;
 
-		rollParser<ustring::iterator, boost::spirit::standard_wide::space_type> parser;
+		rollAndModParser<ustring::iterator, boost::spirit::standard_wide::space_type> parser;
 		ustring::iterator it = lineCopy.begin();
 		bool parseResult = qi::phrase_parse(it, lineCopy.end()
 			, parser
@@ -470,6 +562,20 @@ namespace rfn
 		ustring lineCopy = line;
 
 		ustringFileNameParser<ustring::iterator, boost::spirit::standard_wide::space_type> parser;
+		ustring::iterator it = lineCopy.begin();
+		bool parseResult = qi::phrase_parse(it, lineCopy.end()
+			, parser
+			, boost::spirit::standard_wide::space
+			, result);
+
+		return parseResult;
+	}
+
+	bool rfn::Parser::parseLoneVariable(const ustring & line, ustring & result)
+	{
+		ustring lineCopy = line;
+
+		loneVariableParser<ustring::iterator, boost::spirit::standard_wide::space_type> parser;
 		ustring::iterator it = lineCopy.begin();
 		bool parseResult = qi::phrase_parse(it, lineCopy.end()
 			, parser
@@ -524,6 +630,31 @@ namespace rfn
 		gotoDescriptionParser<ustring::iterator, boost::spirit::standard_wide::space_type> parser;
 		ustring::iterator it = lineCopy.begin();
 		bool parseResult = qi::phrase_parse(it, lineCopy.end()
+			, parser
+			, boost::spirit::standard_wide::space
+			, result);
+
+		return parseResult;
+	}
+
+	bool rfn::Parser::parseAction(const ustring & line, Action & result)
+	{
+		ustring lineCopy = line;
+
+		actionParser<ustring::iterator, boost::spirit::standard_wide::space_type> parser;
+		ustring::iterator it = lineCopy.begin();
+		bool parseResult = qi::phrase_parse(it, lineCopy.end()
+			, parser
+			, boost::spirit::standard_wide::space
+			, result);
+
+		return parseResult;
+	}
+
+	bool rfn::Parser::parseLoneVariable(ustring::iterator begin, const ustring::iterator end, ustring & result)
+	{
+		loneVariableParser<ustring::iterator, boost::spirit::standard_wide::space_type> parser;
+		bool parseResult = qi::phrase_parse(begin, end
 			, parser
 			, boost::spirit::standard_wide::space
 			, result);

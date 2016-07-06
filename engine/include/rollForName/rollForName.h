@@ -2,6 +2,7 @@
 
 #include <rollForName/Generator.h>
 #include <rollForName/TableManager.h>
+#include <rollForName\GameDictionary.h>
 
 #include <map>
 #include <fstream>
@@ -33,8 +34,9 @@ namespace rfn
 
 		GeneratorMap generators_;
 		TableMap tables_;
-		std::vector<ustring> loadedTableFiles,
-			loadedGeneratorFiles;	// The name of every table/generator file that already loaded
+		std::vector<ustring> loadedTableFiles_,
+			loadedGeneratorFiles_;	// The name of every table/generator file that already loaded
+		GameDictionary dictionary_;
 
 		// Open file
 		bool openFile(ustring fileName, std::wifstream& stream);
