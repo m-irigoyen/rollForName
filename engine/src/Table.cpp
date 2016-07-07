@@ -49,7 +49,7 @@ namespace rfn
 
 		// Name and roll
 		if ((name.compare(other.name) != 0)
-			|| (roll == other.roll))
+			|| (roll != other.roll))
 		{
 			return false;
 		}

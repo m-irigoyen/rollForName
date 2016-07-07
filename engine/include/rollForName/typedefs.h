@@ -32,7 +32,9 @@ namespace rfn
 
 	struct Range
 	{
-		Range::Range(int min = 0, int max = 0) : min(min), max(max) {}
+		Range::Range() : min(0), max(0) {}
+		Range::Range(int min, int max) : min(min), max(max) {}
+		Range::Range(int nb) : min(nb), max(nb) {}
 
 		int min;
 		int max;

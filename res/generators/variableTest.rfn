@@ -1,0 +1,6 @@
+"variableTest"
+REQUIRED TABLES : "variableTest"
+{
+	t:"charisma"
+	t:"social status"
+}

@@ -60,5 +60,8 @@ namespace rfn
 		static bool parseNameFromFilepath(const std::string& line, std::string& result);
 		static bool parseNameFromFilepath(const ustring& line, ustring& result);
 		static bool parseLoneVariable(const ustring& line, ustring& result);
+
+		static bool parseRollString(const ustring& line, ustring& result);
+
 	};
 }

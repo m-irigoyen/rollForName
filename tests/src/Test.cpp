@@ -9,8 +9,8 @@
 
 #include <iostream>
 
-//#define ROLL_NB 10000	// nb of rolls done for each roll test
-#define ROLL_NB 1	// nb of rolls done for each roll test
+#define ROLL_NB 10000	// nb of rolls done for each roll test
+//#define ROLL_NB 1	// nb of rolls done for each roll test
 #define ERRORTAG_TEST "Tests"
 #define ERRORTAG_TEST_L L"Tests"
 
@@ -168,7 +168,7 @@ namespace rfn
 			}
 			else
 			{
-				Logger::errlogs(L"Couldn't parse given test :\n" + test);
+				Logger::errlogs(L"Couldn't parse given table :\n" + test);
 				return false;
 			}
 		}
@@ -209,6 +209,24 @@ namespace rfn
 		}
 	};
 
+	// Test generator parsing
+	struct FunctorRollStringTest
+	{
+		bool operator()(ustring test, ustring expected, void*, ustring& result)
+		{
+			if (Parser::parseRollString(test, result))
+			{
+				return expected.compare(result) == 0;
+			}
+			else
+			{
+				Logger::errlogs(L"Couldn't parse given roll string :\n" + test);
+				return false;
+			}
+		}
+	};
+	
+
 
 	//// ALL TESTS
 	float Test::testAll(bool displayFailed)
@@ -220,11 +238,12 @@ namespace rfn
 		std::vector<float> results;
 		results.push_back(testRange(displayFailed));
 		results.push_back(testTableEntryParse(displayFailed));
+		results.push_back(testExtractNameFromPath(displayFailed));
+		results.push_back(testLoneVariableFind(displayFailed));
+		results.push_back(testRollString(displayFailed));
 		results.push_back(testTableParse(displayFailed));
 		results.push_back(testInstructionParse(displayFailed));
 		results.push_back(testGeneratorParse(displayFailed));
-		results.push_back(testExtractNameFromPath(displayFailed));
-		results.push_back(testLoneVariableFind(displayFailed));
 		results.push_back(testRoll(displayFailed));
 
 		for (float f : results)
@@ -493,6 +512,14 @@ namespace rfn
 			testSet.push_back(TAR(line, t));
 		}
 
+		// Simple entry without range
+		{
+			TableEntry t(Range(), L"entry1", L"test");
+			ustring line =
+				L"* \"entry1\" : \"test\"";
+			testSet.push_back(TAR(line, t));
+		}
+
 		Tester<TableEntry> t;
 		float result = t.test(testSet, failedSet, failedResults, FunctorTableEntryTest());
 
@@ -584,6 +611,15 @@ namespace rfn
 			ustring line =
 				L"\"No Roll test\"\n	REQUIRED \"races\"\n	{\n	* \"entry1\" : \"This is a $key\"\n		* \"entry2\" : \"This contains a roll [1d20]\"\n	* \"a simple goto\" : \"-> races\"\n }\n";
 			testSet.push_back(TAR(line, t));
+		}
+
+		// Another one
+		{
+			Table t;
+			t.name = L"social status";
+			t.roll = L"[1d3]+$(cha)";
+			t.entries.push_back(TableEntry(Range(0), L"status1", L"desc1"));
+			//TODO : finish that
 		}
 
 		Tester<Table> t;
@@ -810,6 +846,60 @@ namespace rfn
 		}
 
 		Logger::logs("Test lone variable find results : " + std::to_string(result) + " %"
+			, ERRORTAG_TEST);
+		return result;
+	}
+
+	float Test::testRollString(bool displayFailed)
+	{
+		typedef std::pair<ustring, ustring> TAR;
+		typedef std::vector<TAR> TARList;
+		typedef std::vector<ustring> RList;
+
+		TARList testSet;
+		TARList failedSet;
+		RList failedResults;
+
+		GameDictionary dictionary;
+		dictionary.set(L"key", 1);
+		dictionary.set(L"key2", 2);
+		dictionary.set(L"Digit", 3);
+		dictionary.set(L"Number", -4);
+
+		// Simple
+		{
+			testSet.push_back(TAR(L"[1d4+7d5]", L"[1d4+7d5]"));
+			testSet.push_back(TAR(L"[1d6]", L"[1d6]"));
+			testSet.push_back(TAR(L"[1d4+8+6+5]", L"[1d4+8+6+5]"));
+			testSet.push_back(TAR(L"[1d6-8-6-5]", L"[1d6-8-6-5]"));
+		}
+
+		// Wit mod
+		{
+			testSet.push_back(TAR(L"[1d6+2]+($key)", L"[1d6+2]+($key)"));
+
+		}
+
+		Tester<ustring> t;
+		float result = t.test(testSet, failedSet, failedResults, FunctorRollStringTest());
+
+		if (displayFailed)
+		{
+			if (!failedSet.empty())
+			{
+				for (int i = 0; i < failedSet.size(); ++i)
+				{
+					Logger::logs(L"\n----Test     : "
+						+ failedSet[i].first + L"\n"
+						+ L"----Expected : " + (failedSet[i].second) + L"\n"
+						+ L"----Got      : " + failedResults[i]
+						, ERRORTAG_TEST_L
+						, L"testRollString");
+				}
+			}
+		}
+
+		Logger::logs("Test roll string results : " + std::to_string(result) + " %"
 			, ERRORTAG_TEST);
 		return result;
 	}

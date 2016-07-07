@@ -221,8 +221,8 @@ namespace rfn
 				qi::char_("[")
 				>> *(qi::char_ - "]")
 				>> qi::char_("]")]
-				>> qi::char_("+")
-				>> -(qi::lexeme[
+				>> -(qi::char_("+")
+				>> qi::lexeme[
 					qi::string("($")
 					>> (*qi::char_ - (')'))
 					>> qi::char_(")")
@@ -238,7 +238,7 @@ namespace rfn
 	public:
 		tableEntryParser() : tableEntryParser::base_type(start)
 		{
-			start %= (qi::lit("*") | qi::lit("-"))
+			start %= (qi::lit("*") | qi::lit("-") | qi::lit("!"))
 				>> (range | qi::attr(Range()))
 				>> quotedText
 				>> (
@@ -476,17 +476,27 @@ namespace rfn
 
 		if (parseResult && t.isValid())
 		{
-			return true;
+			if (t.isValid())
+			{
+				return true;
+			}
+			else
+			{
+				Logger::errlogs(L"Parsed invalid table \n"
+					+ line + L"."
+					, ERRORTAG_PARSER_L
+					, L"parseTable");
+			}
 		}
 		else
 		{
-			Logger::errlogs(L"Failed to parse line \n"
+			Logger::errlogs(L"Failed to parse table \n"
 				+ line + L". The following wasn't parsed : "
 				+ ustring(lineCopy, it - lineCopy.begin(), ustring::npos)
 				, ERRORTAG_PARSER_L
 				, L"parseTable");
-			return false;
 		}
+		return false;
 	}
 
 	bool rfn::Parser::parseTable(ustring::iterator& begin, ustring::iterator end, Table & t)
@@ -578,6 +588,19 @@ namespace rfn
 		loneVariableParser<ustring::iterator, boost::spirit::standard_wide::space_type> parser;
 		ustring::iterator it = lineCopy.begin();
 		bool parseResult = qi::phrase_parse(it, lineCopy.end()
+			, parser
+			, boost::spirit::standard_wide::space
+			, result);
+
+		return parseResult;
+	}
+
+	bool rfn::Parser::parseRollString(const ustring & line, ustring & result)
+	{
+		ustring lineCopy = line;
+
+		rollStringParser<ustring::iterator, boost::spirit::standard_wide::space_type> parser;
+		bool parseResult = qi::phrase_parse(lineCopy.begin(), lineCopy.end()
 			, parser
 			, boost::spirit::standard_wide::space
 			, result);
