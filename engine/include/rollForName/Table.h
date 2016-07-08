@@ -31,8 +31,8 @@ namespace rfn
 		void orderEntries();
 
 		ustring name;
-		entryVector entries;
-		ustring roll;
 		ustringVector requiredTables;
+		ustring roll;
+		entryVector entries;
 	};
 }

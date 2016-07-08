@@ -219,14 +219,15 @@ namespace rfn
 		{
 			start %= qi::no_case[
 				qi::char_("[")
-				>> *(qi::char_ - "]")
+				>> *(qi::char_ - ']')
 				>> qi::char_("]")]
 				>> -(qi::char_("+")
-				>> qi::lexeme[
-					qi::string("($")
-					>> (*qi::char_ - (')'))
-					>> qi::char_(")")
-					]);
+					>> qi::char_("(")
+					>> qi::lexeme[
+						qi::char_("$")
+						>> *(qi::char_ - (')'))
+					>> qi::char_(")")]
+					);
 		}
 		qi::rule<Iterator, ustring(), Skipper> start;
 	};
@@ -263,7 +264,7 @@ namespace rfn
 			start %= tableName
 				>> ((qi::no_case[qi::lit("required")] >> -qi::lit(":") >> quotedTextVector)
 					| qi::attr(ustringVector()) )
-				>> (rollString || qi::attr(""))
+				>> (rollString | qi::attr(""))
 				>> qi::lit("{")
 				>> +(tableEntry)
 				>> qi::lit("}");

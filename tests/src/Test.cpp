@@ -476,7 +476,7 @@ namespace rfn
 		{
 			TableEntry t(Range(4, 6), L"goto", L"->anotherTable");
 			ustring line =
-				L"* <4_6> \"goto\" : \"->anotherTable\"\n";
+				L"! <4_6> \"goto\" : \"->anotherTable\"\n";
 			testSet.push_back(TAR(line, t));
 		}
 
@@ -484,7 +484,7 @@ namespace rfn
 		{
 			TableEntry t(Range(7, 9), L"roll", L"You are [1d60] years old");
 			ustring line =
-				L"* <7_9> \"roll\" : \"You are [1d60] years old\"\n";
+				L"- <7_9> \"roll\" : \"You are [1d60] years old\"\n";
 			testSet.push_back(TAR(line, t));
 		}
 
@@ -492,7 +492,7 @@ namespace rfn
 		{
 			TableEntry t(Range(10, 13), L"variable", L"This is a $key, yeah!");
 			ustring line =
-				L"* <10_13> \"variable\" : \"This is a $key, yeah!\"\n";
+				L"! <10_13> \"variable\" : \"This is a $key, yeah!\"\n";
 			testSet.push_back(TAR(line, t));
 		}
 
@@ -617,9 +617,12 @@ namespace rfn
 		{
 			Table t;
 			t.name = L"social status";
-			t.roll = L"[1d3]+$(cha)";
-			t.entries.push_back(TableEntry(Range(0), L"status1", L"desc1"));
-			//TODO : finish that
+			t.roll = L"[1d3]+($cha)";
+			t.entries.push_back(TableEntry(Range(), L"Unknown", L"Sorry, who ? Never head of him."));
+
+			ustring line =
+				L"\"social status\"\n	[1d3]+($cha) \n{\n	* \"Unknown\" : \"Sorry, who ? Never head of him.\" \n }";
+			testSet.push_back(TAR(line, t));
 		}
 
 		Tester<Table> t;
@@ -869,15 +872,17 @@ namespace rfn
 		// Simple
 		{
 			testSet.push_back(TAR(L"[1d4+7d5]", L"[1d4+7d5]"));
-			testSet.push_back(TAR(L"[1d6]", L"[1d6]"));
-			testSet.push_back(TAR(L"[1d4+8+6+5]", L"[1d4+8+6+5]"));
-			testSet.push_back(TAR(L"[1d6-8-6-5]", L"[1d6-8-6-5]"));
+			testSet.push_back(TAR(L"	[1d6]", L"[1d6]"));
+			testSet.push_back(TAR(L" [1d4+8+6+5]", L"[1d4+8+6+5]"));
+			testSet.push_back(TAR(L"  [1d6-8-6-5]", L"[1d6-8-6-5]"));
 		}
 
-		// Wit mod
+		// With mod
 		{
 			testSet.push_back(TAR(L"[1d6+2]+($key)", L"[1d6+2]+($key)"));
-
+			testSet.push_back(TAR(L"[1d3]+($cha)", L"[1d3]+($cha)"));
+			testSet.push_back(TAR(L"[1d3]+ ($cha)", L"[1d3]+($cha)"));
+			testSet.push_back(TAR(L"[1d3]+ ( $cha)", L"[1d3]+($cha)"));
 		}
 
 		Tester<ustring> t;

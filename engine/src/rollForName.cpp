@@ -148,6 +148,8 @@ namespace rfn
 		if (existsTable(tableName, t))
 		{
 			ustring tab = tabFromLevel(level);
+			ustring currentLine = tab + L"[" + t.name + L"] : ";
+
 			TableEntry te;
 			// Rolling and drawing an entry
 			if (t.roll.empty())
@@ -157,7 +159,7 @@ namespace rfn
 			else
 			{
 				int diceResult;
-				if (rollDice(t.roll, diceResult))
+				if (rollDice(t.roll, diceResult, &dictionary_))
 				{
 					te = t.getEntryAt(diceResult);
 				}
@@ -173,13 +175,21 @@ namespace rfn
 			Action a;
 			if (Parser::parseGoto(te.description, gotoName))
 			{
-				result.push_back(tab + te.name + L" : ");
-				drawFromTable(gotoName, result, level + 1);
-				return true;
+				if (drawFromTable(gotoName, result, 0))
+				{
+					result.back().insert(0, currentLine);
+					return true;
+				}
+				else
+				{
+					return false;
+				}
 			}
 			else if (Parser::parseAction(te.description, a))
 			{
 				dictionary_.set(a.variableName, a.value);
+				result.push_back(currentLine + te.name);
+				return true;
 			}
 			else
 			{
@@ -200,7 +210,7 @@ namespace rfn
 					}
 				}
 
-				result.push_back(tab + te.name + L" : " + te.description);
+				result.push_back(currentLine + te.name + L" : " + te.description);
 				return true;
 			}
 		}
