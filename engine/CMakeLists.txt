@@ -16,12 +16,12 @@ else()
 		${CMAKE_CURRENT_SOURCE_DIR}
 		${CMAKE_CURRENT_SOURCE_DIR}/include/rollForName/*
 		)
-	
+
 	FILE(GLOB_RECURSE SRC_ALL
 		${CMAKE_CURRENT_SOURCE_DIR}
 		${CMAKE_CURRENT_SOURCE_DIR}/src/*
 		)
 
-	include_directories(${Boost_INCLUDE_DIRS}) 
+	include_directories(${Boost_INCLUDE_DIRS})
 	add_library(${LIB_NAME} STATIC ${SRC_ALL} ${SRC_include})
 endif()

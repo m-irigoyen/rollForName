@@ -1,5 +1,6 @@
 #include <rollForName/Table.h>
 #include <rollForName/StringHelpers.h>
+#include <rollForName\Logger.h>
 
 #include <algorithm>
 
@@ -96,12 +97,24 @@ namespace rfn
 					entries.at(j).range.makeValid();
 					if (entries.at(i).range.intersects(entries.at(j).range))
 					{
+						Logger::errlogs(L"Found a range intersection in table " + name,
+							L"Table"
+						,L"isValid");
 						return false;
 					}
 				}
 			}
 		}
 		return true;
+	}
+
+	void Table::makeEntriesValid()
+	{
+		for (TableEntry te : entries)
+		{
+			trim(te.name);
+			trim(te.description);
+		}
 	}
 
 	void Table::orderEntries()

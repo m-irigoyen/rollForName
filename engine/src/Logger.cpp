@@ -31,7 +31,7 @@ namespace rfn
 
 	void Logger::errlogs(ustring message, ustring author, ustring section)
 	{
-		std::wcerr << "[" << author.data() << ":" << section.data() << "] ERROR : "
+		std::wcerr << std::endl << "[" << author.data() << ":" << section.data() << "] ERROR : "
 			<< message.data() << std::endl;
 	}
 

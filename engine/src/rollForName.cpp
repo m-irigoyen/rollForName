@@ -31,6 +31,14 @@ namespace rfn
 
 	bool RollForName::loadTablesFromFile(ustring fileName, bool isCompletePath)
 	{
+		if (fileName.empty())
+		{
+			Logger::errlogs(L"Empty filename"
+				, ERRORTAG_ROLLFORNAME_L
+				, L"loadGeneratorsFromFile");
+			return false;
+		}
+
 		ustring completePath;
 		if (!isCompletePath)
 		{
@@ -62,6 +70,14 @@ namespace rfn
 
 	bool RollForName::loadGeneratorsFromFile(ustring fileName, bool isCompletePath)
 	{
+		if (fileName.empty())
+		{
+			Logger::errlogs(L"Empty filename"
+				, ERRORTAG_ROLLFORNAME_L
+				, L"loadGeneratorsFromFile");
+			return false;
+		}
+
 		ustring completePath;
 
 		if (!isCompletePath)
@@ -123,6 +139,11 @@ namespace rfn
 		Generator g;
 		if (existsGenerator(generatorName, g))
 		{
+			if (isTopLevel)
+			{
+				level = -1;
+			}
+
 			ustring tab = tabFromLevel(level);
 			result.push_back(tab + g.name);
 
@@ -130,6 +151,13 @@ namespace rfn
 			{
 				executeInstruction(i, level+1, result);
 			}
+			return true;
+		}
+		else
+		{
+			Logger::errlogs(L"couldn't find generator " + generatorName
+				, ERRORTAG_ROLLFORNAME_L
+				, L"generate");
 		}
 		return false;
 	}
@@ -210,12 +238,35 @@ namespace rfn
 					}
 				}
 
-				result.push_back(currentLine + te.name + L" : " + te.description);
+				ustring line = currentLine + te.name;
+				if (!te.description.empty())
+				{
+					line += L" :" + te.description;
+				}
+				result.push_back(line);
 				return true;
 			}
 		}
+		else
+		{
+			Logger::errlogs(L"couldn't find table " + tableName
+				, ERRORTAG_ROLLFORNAME_L
+				, L"drawFromTable");
+		}
 
 		return false;
+	}
+
+	ustringVector RollForName::listGenerators()
+	{
+		ustringVector v;
+		for (GeneratorMap::iterator it = generators_.begin()
+			; it != generators_.end()
+			; ++it)
+		{
+			v.push_back(it->first);
+		}
+		return v;
 	}
 
 	bool RollForName::openFile(ustring fileName, std::wifstream & stream)

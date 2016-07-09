@@ -33,24 +33,51 @@ static inline void trim(T &s) {
 
 //! trim from start (copying)
 template <typename T>
-static inline ustring trimmedl(T s) {
-	triml(s);
-	return s;
+static inline T trimmedl(const T s) {
+	T tmp = s;
+	triml(tmp);
+	return tmp;
 }
 
 //! trim from end (copying)
 template <typename T>
-static inline ustring trimmedr(T s) {
-	trimr(s);
-	return s;
+static inline T trimmedr(const T s) {
+	T tmp = s;
+	trimr(tmp);
+	return tmp;
 }
 
 //! trim from both ends (copying)
 template <typename T>
-static inline ustring trimmed(T s) {
-	trim(s);
-	return s;
+static inline T trimmed(const T s) {
+	T tmp = s;
+	trim(tmp);
+	return tmp;
 }
+
+// To lower case
+template <typename T>
+static inline void lowercase(T& s) {
+	std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+}
+
+// To lower case
+static inline void lowercase(ustringVector& vec) {
+	for (ustring& s : vec)
+	{
+		std::transform(s.begin(), s.end(), s.begin(), ::tolower);
+	}
+}
+
+// To lower case
+template <typename T>
+static inline T lowercased(const T s) {
+	T tmp = s;
+	std::transform(tmp.begin(), tmp.end(), tmp.begin(), ::tolower);
+	return tmp;
+}
+
+
 
 template <typename T>
 static inline void removeSpaces(T& s) {

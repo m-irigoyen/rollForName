@@ -28,6 +28,8 @@ namespace rfn
 
 		bool drawFromTable(ustring tableName, ustringVector& result, int level);
 
+		ustringVector listGenerators();
+
 	private:
 		typedef std::map<ustring, Generator> GeneratorMap;
 		typedef std::map<ustring, Table> TableMap;

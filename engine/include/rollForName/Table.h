@@ -26,6 +26,7 @@ namespace rfn
 
 		//! returns true if the roll's range is respected by the table entries
 		bool isValid();
+		void makeEntriesValid();
 
 		//! Orders the entries in ascending order of range
 		void orderEntries();

@@ -81,9 +81,24 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 namespace rfn
 {
+	// Parser that recognizes a table entry starting character
+	template <typename Iterator, typename Skipper = boost::spirit::standard_wide::space_type>
+	struct tableEntryStartCharacterChecker : public qi::grammar<Iterator, Skipper>
+	{
+	public:
+		tableEntryStartCharacterChecker() : tableEntryStartCharacterChecker::base_type(start)
+		{
+			start = qi::lit("*")
+				| qi::lit("!")
+				| qi::lit("-");
+		}
+
+		qi::rule<Iterator, Skipper> start;
+	};
+
 	// Parser that reads a ustring between quotes
 	template <typename Iterator, typename Skipper = boost::spirit::standard_wide::space_type>
-	struct quotedTextParser : public qi::grammar<Iterator, ustring(), Skipper> // return type is Table
+	struct quotedTextParser : public qi::grammar<Iterator, ustring(), Skipper>
 	{
 	public:
 		quotedTextParser() : quotedTextParser::base_type(start)
@@ -96,7 +111,7 @@ namespace rfn
 
 	// Parser that reads several quoted texts separated by commas
 	template <typename Iterator, typename Skipper = boost::spirit::standard_wide::space_type>
-	struct quotedTextVectorParser : public qi::grammar<Iterator, std::vector<ustring>(), Skipper> // return type is Table
+	struct quotedTextVectorParser : public qi::grammar<Iterator, std::vector<ustring>(), Skipper>
 	{
 	public:
 		quotedTextVectorParser() : quotedTextVectorParser::base_type(start)
@@ -110,7 +125,7 @@ namespace rfn
 
 	// Parser that extracts a file name, without extension, from a filepath (ustring form)
 	template <typename Iterator, typename Skipper = boost::spirit::standard_wide::space_type>
-	struct ustringFileNameParser : public qi::grammar<Iterator, ustring(), Skipper> // return type is Table
+	struct ustringFileNameParser : public qi::grammar<Iterator, ustring(), Skipper>
 	{
 	public:
 		ustringFileNameParser() : ustringFileNameParser::base_type(start)
@@ -129,7 +144,7 @@ namespace rfn
 
 	// Parser that extracts a file name, without extension, from a filepath (std::string form)
 	template <typename Iterator, typename Skipper = boost::spirit::standard::space_type>
-	struct fileNameParser : public qi::grammar<Iterator, std::string(), Skipper> // return type is Table
+	struct fileNameParser : public qi::grammar<Iterator, std::string(), Skipper>
 	{
 	public:
 		fileNameParser() : fileNameParser::base_type(start)
@@ -148,7 +163,7 @@ namespace rfn
 
 	// Parser that reads a table name
 	template <typename Iterator, typename Skipper = boost::spirit::standard_wide::space_type>
-	struct tableNameParser : public qi::grammar<Iterator, ustring(), Skipper> // return type is Table
+	struct tableNameParser : public qi::grammar<Iterator, ustring(), Skipper>
 	{
 	public:
 		tableNameParser() : tableNameParser::base_type(start)
@@ -239,15 +254,17 @@ namespace rfn
 	public:
 		tableEntryParser() : tableEntryParser::base_type(start)
 		{
-			start %= (qi::lit("*") | qi::lit("-") | qi::lit("!"))
+			start %= startCharacter
 				>> (range | qi::attr(Range()))
 				>> quotedText
 				>> (
-					(qi::lit(":") >> quotedText)
-					| qi::attr("")
+					(qi::lit(":") >> quotedText)	// basic description
+					| (qi::lit(":") >> qi::lexeme[*(qi::char_ - qi::eol )])	// action or goto
+					| (qi::attr(""))
 					);
 		}
 
+		tableEntryStartCharacterChecker<Iterator, Skipper> startCharacter;
 		rangeParser<Iterator, Skipper> range;
 		quotedTextParser<Iterator, Skipper> quotedText;
 
@@ -417,7 +434,7 @@ namespace rfn
 	{
 		return qi::phrase_parse(begin
 			, end
-			, (*qi::char_ - '}') >> qi::char_('}')
+			, *(qi::char_ - '}') >> qi::char_('}')
 			, boost::spirit::standard_wide::space
 			, skipped);
 	}
@@ -475,10 +492,12 @@ namespace rfn
 			, boost::spirit::standard_wide::space
 			, t);
 
-		if (parseResult && t.isValid())
+		if (parseResult)
 		{
 			if (t.isValid())
 			{
+				lowercase(t.name);
+				t.makeEntriesValid();
 				return true;
 			}
 			else
@@ -510,7 +529,20 @@ namespace rfn
 
 		if (parseResult && t.isValid())
 		{
-			return true;
+			if (!t.isValid())
+			{
+				ustring line(begin, end);
+				Logger::errlogs(L"Detected invalid table : \n"
+					+ line + L".\n"
+					, ERRORTAG_PARSER_L
+					, L"parseTable");
+				return false;
+			}
+			else
+			{
+				lowercase(t.name);
+				return true;
+			}
 		}
 		else
 		{
@@ -593,6 +625,10 @@ namespace rfn
 			, boost::spirit::standard_wide::space
 			, result);
 
+		if (parseResult)
+		{
+			lowercase(result);
+		}
 		return parseResult;
 	}
 
@@ -605,6 +641,11 @@ namespace rfn
 			, parser
 			, boost::spirit::standard_wide::space
 			, result);
+
+		if (parseResult)
+		{
+			lowercase(result);
+		}
 
 		return parseResult;
 	}
@@ -620,8 +661,13 @@ namespace rfn
 			, boost::spirit::standard_wide::space
 			, result);
 
+		if (parseResult)
+		{
+			lowercase(result.name);
+		}
 		return parseResult;
 	}
+
 	bool rfn::Parser::parseGenerator(const ustring & line, Generator & result)
 	{
 		ustring lineCopy = line;
@@ -633,8 +679,16 @@ namespace rfn
 			, boost::spirit::standard_wide::space
 			, result);
 
+		if (parseResult)
+		{
+			lowercase(result.name);
+			lowercase(result.requiredGenerators);
+			lowercase(result.requiredTables);
+		}
+
 		return parseResult;
 	}
+
 	bool rfn::Parser::parseGenerator(ustring::iterator& begin
 		, ustring::iterator end
 		, Generator& result)
@@ -644,6 +698,13 @@ namespace rfn
 			, parser
 			, boost::spirit::standard_wide::space
 			, result);
+
+		if (parseResult)
+		{
+			lowercase(result.name);
+			lowercase(result.requiredGenerators);
+			lowercase(result.requiredTables);
+		}
 
 		return parseResult;
 	}
@@ -657,6 +718,11 @@ namespace rfn
 			, parser
 			, boost::spirit::standard_wide::space
 			, result);
+
+		if (parseResult)
+		{
+			lowercase(result);
+		}
 
 		return parseResult;
 	}
@@ -672,6 +738,11 @@ namespace rfn
 			, boost::spirit::standard_wide::space
 			, result);
 
+		if (parseResult)
+		{
+			lowercase(result.variableName);
+		}
+
 		return parseResult;
 	}
 
@@ -682,6 +753,11 @@ namespace rfn
 			, parser
 			, boost::spirit::standard_wide::space
 			, result);
+
+		if (parseResult)
+		{
+			lowercase(result);
+		}
 
 		return parseResult;
 	}

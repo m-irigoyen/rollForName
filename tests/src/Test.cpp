@@ -225,7 +225,7 @@ namespace rfn
 			}
 		}
 	};
-	
+
 
 
 	//// ALL TESTS
@@ -520,6 +520,20 @@ namespace rfn
 			testSet.push_back(TAR(line, t));
 		}
 
+		// Special action and goto syntax
+		{
+			TableEntry t(Range(), L"entry1", L"-> testTable");
+			ustring line =
+				L"* \"entry1\" : -> testTable\n";
+			testSet.push_back(TAR(line, t));
+		}
+		{
+			TableEntry t(Range(), L"entry1", L"($keytest=1)");
+			ustring line =
+				L"* \"entry1\" : ($keytest=1)\n";
+			testSet.push_back(TAR(line, t));
+		}
+
 		Tester<TableEntry> t;
 		float result = t.test(testSet, failedSet, failedResults, FunctorTableEntryTest());
 
@@ -561,7 +575,7 @@ namespace rfn
 		// Simple table
 		{
 			Table t;
-			t.name = L"FirstTest";
+			t.name = L"firsttest";
 			t.roll = L"[1d6]";
 			t.entries.push_back(TableEntry(Range(1, 3), L"entry1", L"This is the first entry"));
 			t.entries.push_back(TableEntry(Range(4, 6), L"entry2", L"This is the second entry"));
@@ -574,7 +588,7 @@ namespace rfn
 		// Same with stuff before the name
 		{
 			Table t;
-			t.name = L"FirstTest";
+			t.name = L"firsttest";
 			t.roll = L"[1d6]";
 			t.entries.push_back(TableEntry(Range(1, 3), L"entry1", L"This is the first entry"));
 			t.entries.push_back(TableEntry(Range(4, 6), L"entry2", L"This is the second entry"));
@@ -587,7 +601,7 @@ namespace rfn
 		// More complex table
 		{
 			Table t;
-			t.name = L"Another Test";
+			t.name = L"another test";
 			t.roll = L"[2d4+1]";
 			t.requiredTables.push_back(L"races");
 			t.entries.push_back(TableEntry(Range(2, 3), L"entry1", L"This is a $key"));
@@ -602,7 +616,7 @@ namespace rfn
 		// No roll / range
 		{
 			Table t;
-			t.name = L"No Roll test";
+			t.name = L"no roll test";
 			t.requiredTables.push_back(L"races");
 			t.entries.push_back(TableEntry(Range(), L"entry1", L"This is a $key"));
 			t.entries.push_back(TableEntry(Range(), L"entry2", L"This contains a roll [1d20]"));
@@ -624,6 +638,19 @@ namespace rfn
 				L"\"social status\"\n	[1d3]+($cha) \n{\n	* \"Unknown\" : \"Sorry, who ? Never head of him.\" \n }";
 			testSet.push_back(TAR(line, t));
 		}
+
+		// Another one
+		{
+			Table t;
+			t.name = L"guardians";
+			t.roll = L"[1d10]";
+			t.entries.push_back(TableEntry(Range(1,10), L"Guardian", L""));
+
+			ustring line =
+				L"754-\"Guardians\"\n[1d10]\n{\n-<1_10>\"Guardian\"\n}";
+			testSet.push_back(TAR(line, t));
+		}
+
 
 		Tester<Table> t;
 		float result = t.test(testSet, failedSet, failedResults, FunctorTableTest());
@@ -661,7 +688,7 @@ namespace rfn
 		{
 			Instruction i;
 			i.generator = true;
-			i.name = L"Test";
+			i.name = L"test";
 			ustring line = L"g: \"Test\"";
 			testSet.push_back(TAR(line, i));
 		}
@@ -670,7 +697,7 @@ namespace rfn
 		{
 			Instruction i;
 			i.generator = false;
-			i.name = L"Test";
+			i.name = L"test";
 			ustring line = L"t: \"Test\"";
 			testSet.push_back(TAR(line, i));
 		}
@@ -679,7 +706,7 @@ namespace rfn
 		{
 			Instruction i;
 			i.generator = true;
-			i.name = L"Test name";
+			i.name = L"test name";
 			ustring line = L"g: \"Test name\"";
 			testSet.push_back(TAR(line, i));
 		}
@@ -688,7 +715,7 @@ namespace rfn
 		{
 			Instruction i;
 			i.generator = true;
-			i.name = L"Test name";
+			i.name = L"test name";
 			ustring line = L"\"Test name\"";
 			testSet.push_back(TAR(line, i));
 		}
@@ -735,7 +762,7 @@ namespace rfn
 		// Base generator
 		{
 			Generator g;
-			g.name = L"Gen Test";
+			g.name = L"gen test";
 			g.instructions.push_back(Instruction(false, L"table"));
 			g.instructions.push_back(Instruction(true, L"gen"));
 			g.instructions.push_back(Instruction(true, L"default"));
@@ -826,7 +853,7 @@ namespace rfn
 		{
 			testSet.push_back(TAR(L"Simple ($key) ", L"key"));
 			testSet.push_back(TAR(L"This($key)is harder", L"key"));
-			testSet.push_back(TAR(L"This($Number)is harder", L"Number"));
+			testSet.push_back(TAR(L"This($Number)is harder", L"number"));
 		}
 
 		Tester<ustring> t;
@@ -879,8 +906,8 @@ namespace rfn
 
 		// With mod
 		{
-			testSet.push_back(TAR(L"[1d6+2]+($key)", L"[1d6+2]+($key)"));
-			testSet.push_back(TAR(L"[1d3]+($cha)", L"[1d3]+($cha)"));
+			testSet.push_back(TAR(L"[1d6+2]+($KEy)", L"[1d6+2]+($key)"));
+			testSet.push_back(TAR(L"[1d3]+($Cha)", L"[1d3]+($cha)"));
 			testSet.push_back(TAR(L"[1d3]+ ($cha)", L"[1d3]+($cha)"));
 			testSet.push_back(TAR(L"[1d3]+ ( $cha)", L"[1d3]+($cha)"));
 		}
