@@ -1,0 +1,12 @@
+"central casting"
+REQUIRED TABLES : "Central_Casting2"
+{
+	t:"Character Race"
+	t:"Culture"
+	t:"Social Status"
+	t:"Birth legitimacy"
+	t:"Reasons for Illegitimate Births"
+	t:"The Family"
+	t:"Brother and Sister"
+	t:"Guardians"
+}

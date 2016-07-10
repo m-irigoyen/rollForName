@@ -323,13 +323,15 @@ namespace rfn
 		generatorParser() : generatorParser::base_type(start)
 		{
 			start %= quotedText	// name
-				>> ( (qi::no_case[qi::lit("required generators")]
-						>> -qi::lit(":")
+				>> ( (qi::no_case[qi::lit("required")
+						>> qi::lit("generators")]
+						>> qi::lit(":")
 						>> quotedTextVector)
 					| qi::attr(ustringVector()) )
-				>> ( ((qi::no_case[qi::lit("required tables")]
-						>> -qi::lit(":")
-						>> *quotedTextVector))
+				>> ( (qi::no_case[qi::lit("required")
+						>> qi::lit("tables")]
+						>> qi::lit(":")
+						>> quotedTextVector)
 					| qi::attr(ustringVector()) )
 				>> qi::lit("{")
 				>> +instruction

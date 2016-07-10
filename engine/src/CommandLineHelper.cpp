@@ -22,6 +22,9 @@ namespace rfn
 	{
 		std::string option;
 		std::string value;
+
+		void setOption(std::string o) { option = o; }
+		void setValue(std::string v) { value = v; }
 	};
 }
 
@@ -122,19 +125,6 @@ namespace rfn
 
 	// Parsing
 
-	// Parser that reads a string between quotes
-	template <typename Iterator, typename Skipper = boost::spirit::standard::space_type>
-	struct quotedTextParser : public qi::grammar<Iterator, std::string(), Skipper> // return type is Table
-	{
-	public:
-		quotedTextParser() : quotedTextParser::base_type(start)
-		{
-			start %= qi::lexeme[qi::lit("\"") >> *(qi::char_ - "\"") >> qi::lit("\"")];
-		}
-
-		qi::rule<Iterator, std::string(), Skipper> start;
-	};
-
 	// Parser that reads a filename option, and returns the filename
 	template <typename Iterator, typename Skipper = boost::spirit::standard::space_type>
 	struct commandLineOptionParser : public qi::grammar<Iterator, commandLineOption(), Skipper> // return type is Table
@@ -143,12 +133,11 @@ namespace rfn
 		commandLineOptionParser() : commandLineOptionParser::base_type(start)
 		{
 			start %= qi::lexeme[qi::lit("--")
-				>> *(qi::char_ - '=')
-				>> ((qi::lit("=") >> *qi::char_)
-				| qi::attr(""))];
+				>> *(qi::char_ - '=')]
+				>> ((qi::lit("=") >> qi::lexeme[*qi::char_])
+				| qi::attr(""));
 		}
 
-		quotedTextParser<Iterator, Skipper> quotedText;
 		qi::rule<Iterator, commandLineOption(), Skipper> start;
 	};
 

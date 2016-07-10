@@ -16,5 +16,7 @@ cd ../../
 cd../
 xcopy /e /i /y "sources/res" "build/ship/release/res"
 xcopy /e /i /y "sources/res" "build/ship/debug/res"
+xcopy /e /i /y "sources/userScripts" "build/ship/debug/scripts"
+xcopy /e /i /y "sources/userScripts" "build/ship/release/scripts"
 
 cd sources/scripts

@@ -172,7 +172,7 @@ void generationMenu(RollForName& rfn, const std::string& generatorName)
 	while (keepGoing)
 	{
 		std::string line;
-		std::cout << "Enter command :\n\reroll (shortcuts : 'r', '1')\n\tquit" << std::endl;
+		std::cout << "Enter command :\n\treroll (shortcuts : 'r', '1')\n\tquit" << std::endl;
 		std::cout << "command : ";
 		std::cin >> line;
 		trim(line);

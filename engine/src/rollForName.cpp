@@ -241,7 +241,7 @@ namespace rfn
 				ustring line = currentLine + te.name;
 				if (!te.description.empty())
 				{
-					line += L" :" + te.description;
+					line += L" : " + te.description;
 				}
 				result.push_back(line);
 				return true;
@@ -342,7 +342,7 @@ namespace rfn
 					Logger::errlogs(L"Couldn't parse the following table :\n"
 						+ skipped
 						, ERRORTAG_ROLLFORNAME_L
-						, L"loadTableFromFile");
+						, L"loadTablesFromStream");
 				}
 				else
 				{
@@ -418,7 +418,7 @@ namespace rfn
 					Logger::errlogs(L"Couldn't parse the following generator :\n"
 						+ skipped
 						, ERRORTAG_ROLLFORNAME_L
-						, L"loadTableFromFile");
+						, L"loadGeneratorsFromStream");
 				}
 				else
 				{

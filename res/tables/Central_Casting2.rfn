@@ -1,0 +1,116 @@
+﻿101 - "Character Race"
+[1d20]
+{
+- <1_14> "Human"
+- <15_16> "Elf"
+- <17> "Dwarf"
+- <18> "Halfling"
+- <19> "Half elf"
+- <20> "Other Races" : "-> Other Races"
+}
+
+
+101bis - "Other Races"
+[1d10]
+{
+- <1_3> "Beastman"
+- <4_5> "Reptileman"
+- <6> "Orc"
+- <7_10> "Half orc"
+}
+
+102 - "Culture"
+[1d10]
+{
+- <1> "Primitive" : ($cuMod=-3)
+- <2_3> "Nomad" : ($cuMod=0)
+- <4_6> "Barbarian" : ($cuMod=2)
+- <7_9> "Civilized" : ($cuMod=4)
+- <10> "Civilized decadent" : ($cuMod=7)
+}
+
+103 - "Social Status"
+REQUIRED "Culture"
+[1d100 + $cuMod]
+{
+- <-2_12> "Destitute" : ($solMod=-3)
+- <13_40> "Poor" : ($solMod=-1)
+- <41_85> "Comfortable" : ($solMod=0)
+- <86_94> "Well to do" : ($solMod=2)
+- <95_98> "Wealthy" : ($solMod=4)
+- <99_107> "Nobility" : ($solMod=8)
+}
+
+104 - "Birth Legitimacy"
+[1d20]
+{
+- <1_19> "Legitimate Character"
+- <20> "Illegitimate Character" : "-> Reasons for Illegitimate Births"
+}
+
+
+
+
+
+106 - "The Family"
+[1d20] + ($cuMod)
+{
+- <-2_8> "Mother and Father Only"
+- <9_12> "Extended Family" : "Mother and Father, Grandparents and Aunts/Uncles and Cousins"
+- <13> "Grandparents Only"
+- <14> "Single Grandparents"
+- <15> "Uncles and Aunts"
+- <16 _ 17> "Mother Only"
+- <18 _ 19> "Father Only"
+- <20> "Guardian" : "-> Guardians"
+- <21_24> "None know" : "Survival Skills"
+- <25_27> "None know, Orphanage"
+}
+
+107 - "Brother and Sister"
+[1d20]
+{
+- <1> "1 big brother"
+- <2> "2 bigs brothers"
+- <3> "1 big sister"
+- <4> "2 bigs sisters"
+- <5> "1 little brother"
+- <6> "2 littles brothers"
+- <7> "1 little sister"
+- <8> "2 littles sisters"
+- <9> "1 big brother and 1 big sister"
+- <10> "1 little brother and 1 little sister"
+- <11> "1 big brother and 1 little sister"
+- <12> "1 little brother and 1 big sister"
+- <13> "1 little brother, 1 little sister and 1 big sister"
+- <14> "1 little brother, 1 little sister and 1 big brother"
+- <15> "1 little brother,and 2 bigs sisters"
+- <16> "1 little brother, 1 big sister and 1 big brother"
+- <17> "1 little sister, 1 big brother and 1 big sister"
+- <18> "1 little sister,and 2 bigs brothers"
+- <19_20> "no brother and sister"
+}
+
+
+105 - "Reasons for Illegitimate Births"
+REQUIRED "Birth Legitimacy"
+[1d20+ $cuMod]
+{
+- <-2_12> "Mother prostitute" : "Mother was a common prostitute and unmarried"
+- <13_14> "Raped mother" : "Mother was raped - remaind unmarried"
+- <15_23> "Mother was unmarried"
+- <24_27> "Mother was a courtesan"
+}
+
+
+
+
+765135 - "Guardians"
+[1d10]
+{
+	! <1_10> "Guardian"
+}
+
+
+
+

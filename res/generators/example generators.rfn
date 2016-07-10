@@ -1,0 +1,15 @@
+"Fantasy character example"
+REQUIRED TABLES : "example tables"
+{
+    t: "hair color"
+    t: "charisma"
+    t: "social status"
+    t: "common races"
+}
+
+"character"
+required generators : "example generators 2"
+{
+    g: "race"
+    g: "social status"
+}

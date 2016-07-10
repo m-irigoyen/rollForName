@@ -1,0 +1,12 @@
+"social status"
+required tables : "example tables"
+{
+    t: "charisma"
+    t: "social status"
+}
+
+"race"
+required tables : "example tables"
+{
+    t: "common races"
+}

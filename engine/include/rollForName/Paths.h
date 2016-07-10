@@ -2,7 +2,7 @@
 
 #include <rollForName/typedefs.h>
 
-#define DEBUG
+//#define DEBUG
 
 namespace rfn
 {
